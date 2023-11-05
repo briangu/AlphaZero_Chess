@@ -151,18 +151,20 @@ def save_pgn_to_db(pgn_path, game_cnt, num_workers):
         w.start()
 
     # game_threshold = 20000*num_workers
-    write_threshold = 100000
+    write_threshold = 1000000
     tobj = tqdm(enumerate(read_games(pgn_path, game_cnt)), total=game_cnt)
     for i, raw_pgn in tobj:
         game_queue.put(raw_pgn)
         # while game_queue.qsize() > game_threshold:
         #     time.sleep(0.1)
         #     tobj.set_postfix({"game_queue": game_queue.qsize(), "write_queue": write_queue.qsize()}, refresh=True)
-        if write_queue.qsize() > write_threshold:
+        wq = write_queue.qsize()
+        gq = game_queue.qsize()
+        if wq > write_threshold:
             time.sleep(0.1)
             # tobj.set_postfix({"game_queue": game_queue.qsize(), "write_queue": write_queue.qsize()}, refresh=True)
-        if i % 10 == 0:
-            tobj.set_postfix({"game_queue": game_queue.qsize(), "write_queue": write_queue.qsize()}, refresh=True)
+        if i % 10 == 0 and wq > 10 and gq > 10:
+            tobj.set_postfix({"game_queue": gq, "write_queue": wq}, refresh=True)
 
     for _ in range(num_workers):
         game_queue.put(None)
