@@ -177,6 +177,6 @@ def save_pgn_to_db(pgn_path, game_cnt, num_workers):
 # Example usage
 pgn_path = "lichess_db_standard_rated_2023-02.pgn"
 game_cnt = 108201825
-num_workers = 8
+num_workers = 32
 
 save_pgn_to_db(pgn_path, game_cnt, num_workers)
