@@ -62,7 +62,7 @@ def writer_process(write_queue, db_path):
                     # Insert move data
                     for move in item['moves']:
                         c.execute("INSERT INTO moves (game_id, move, score, mate) VALUES (?, ?, ?, ?)",
-                                  (game_id, move['move'], move['score'], move['mate']))
+                                  (game_id, move[0], move[1], move[2]))
 
                 if write_queue.qsize() == 0:  # Commit periodically or when queue is empty
                     conn.commit()
