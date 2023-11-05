@@ -150,10 +150,10 @@ def save_pgn_to_db(pgn_path, game_cnt, num_workers):
     for w in workers:
         w.start()
 
-    #pause_cnt = 0
+    threshold = 2000*num_workers
     for raw_pgn in tqdm(read_games(pgn_path, game_cnt), total=game_cnt):
         game_queue.put(raw_pgn)
-        while game_queue.qsize() > 2000000:
+        while game_queue.qsize() > threshold:
             time.sleep(0.1)
 
     for _ in range(num_workers):
