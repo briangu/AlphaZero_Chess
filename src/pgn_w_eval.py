@@ -173,6 +173,8 @@ def save_pgn_to_db(pgn_path, game_cnt, num_workers):
         while gq > game_threshold or wq > write_threshold:
             time.sleep(0.1)
             tobj.set_postfix({"game_queue": gq, "write_queue": wq}, refresh=True)
+            wq = write_queue.qsize()
+            gq = game_queue.qsize()
         if i % 100 == 0:
             tobj.set_postfix({"game_queue": gq, "write_queue": wq}, refresh=True)
 
