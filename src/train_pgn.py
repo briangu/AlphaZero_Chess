@@ -104,7 +104,7 @@ def process_game(pgn_text):
         policy[move_index] = 1.0
         policy = policy / torch.sum(policy)
 
-        value = normalize_stockfish_score(score) if isinstance(score, float) else normalize_mate_score(score)
+        value = normalize_stockfish_score(score) if isinstance(score, (int,float)) else normalize_mate_score(score)
 
 #        board_state = copy.deepcopy(ed.encode_board(current_board))
         board_state = torch.tensor(ed.encode_board(current_board))
@@ -126,10 +126,10 @@ class ChessPGNDataset(IterableDataset):
             if pgn_text is None:
                 return  # End of file
             for state, policy, value in process_game(pgn_text):
-                state_tensor = torch.FloatTensor(state)
-                policy_tensor = torch.FloatTensor(policy)
-                value_tensor = torch.FloatTensor([value])  # Ensure value is a tensor
-                yield state_tensor, policy_tensor, value_tensor
+                # state_tensor = torch.FloatTensor(state)
+                # policy_tensor = torch.FloatTensor(policy)
+                # value_tensor = torch.FloatTensor([value])  # Ensure value is a tensor
+                yield state, policy, value
 
     def __len__(self):
         return self.game_cnt
