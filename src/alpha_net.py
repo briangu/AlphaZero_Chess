@@ -8,7 +8,6 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import os
-import datetime
 
 class board_data(Dataset):
     def __init__(self, dataset): # dataset = np.array of (s, p, v)

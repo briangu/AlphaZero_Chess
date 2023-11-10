@@ -1,14 +1,18 @@
 import chess
 import chess.pgn
 import io
-import copy
 import torch
 from torch.utils.data import Dataset
 import encoder_decoder as ed
 from torch.utils.data import DataLoader
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from torch.utils.data import Dataset
 import sys
-from alpha_net import ChessNet, train
-
+from alpha_net import ChessNet, AlphaLoss
+import os
 from chess_board import board as c_board
 
 
@@ -142,6 +146,42 @@ class ChessPGNDataset(Dataset):
         return self.game_cnt  # Adjust as needed
 
 
+def train(net, train_loader, epoch_start=0, epoch_stop=20, cpu=0):
+    torch.manual_seed(cpu)
+    cuda = torch.cuda.is_available()
+    net.train()
+    criterion = AlphaLoss()
+    optimizer = optim.Adam(net.parameters(), lr=0.003)
+    scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[100,200,300,400], gamma=0.2)
+
+    losses_per_epoch = []
+    for epoch in range(epoch_start, epoch_stop):
+        total_loss = 0.0
+        losses_per_batch = []
+        for i, data in enumerate(train_loader, 0):
+            state, policy, value = data
+            if cuda:
+                state, policy, value = state.cuda().float(), policy.float().cuda(), value.cuda().float()
+            optimizer.zero_grad()
+            policy_pred, value_pred = net(state)
+            loss = criterion(value_pred[:,0], value, policy_pred, policy)
+            loss.backward()
+            optimizer.step()
+            total_loss += loss.item()
+            if i % 10 == 9:
+                print('Process ID: %d [Epoch: %d, %5d/ %d points] total loss per batch: %.3f' %
+                      (os.getpid(), epoch + 1, (i + 1)*30, len(train_loader.dataset), total_loss/10))
+                print("Policy:", policy[0].argmax().item(), policy_pred[0].argmax().item())
+                print("Value:", value[0].item(), value_pred[0,0].item())
+                losses_per_batch.append(total_loss/10)
+                total_loss = 0.0
+        losses_per_epoch.append(sum(losses_per_batch)/len(losses_per_batch))
+        if len(losses_per_epoch) > 100:
+            if abs(sum(losses_per_epoch[-4:-1])/3 - sum(losses_per_epoch[-16:-13])/3) <= 0.01:
+                break
+        scheduler.step()
+
+
 def train_chessnet(train_loader, net_to_train, save_as):
     net = ChessNet()
     cuda = torch.cuda.is_available()
@@ -163,5 +203,5 @@ if __name__=="__main__":
     model_path = None
     dataset = ChessPGNDataset(pgn_path, game_cnt)
     batch_size = 128  # You can adjust the batch size as needed
-    train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=1)
+    train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=1)
     train_chessnet(train_loader, net_to_train=model_path,save_as=out_model_path)
