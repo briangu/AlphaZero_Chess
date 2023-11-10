@@ -122,15 +122,14 @@ class ChessPGNDataset(IterableDataset):
         self.game_cnt = game_cnt
 
     def __iter__(self):
-        with open(self.pgn_path, 'r') as pgn_file:
-            for pgn_text in read_games(pgn_file):
-                if pgn_text is None:
-                    return  # End of file
-                for state, policy, value in process_game(pgn_text):
-                    state_tensor = torch.FloatTensor(state)
-                    policy_tensor = torch.FloatTensor(policy)
-                    value_tensor = torch.FloatTensor([value])  # Ensure value is a tensor
-                    yield state_tensor, policy_tensor, value_tensor
+        for pgn_text in read_games(self.pgn_path):
+            if pgn_text is None:
+                return  # End of file
+            for state, policy, value in process_game(pgn_text):
+                state_tensor = torch.FloatTensor(state)
+                policy_tensor = torch.FloatTensor(policy)
+                value_tensor = torch.FloatTensor([value])  # Ensure value is a tensor
+                yield state_tensor, policy_tensor, value_tensor
 
     def __len__(self):
         return self.game_cnt
