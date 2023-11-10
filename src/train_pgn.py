@@ -112,7 +112,7 @@ def process_game(pgn_text):
         value = torch.tensor(value)
         yield (board_state, policy, value)
         promoted_piece = n.move.promotion.symbol() if n.move.promotion is not None else None
-        current_board = current_board.move_piece(initial_pos, final_pos, promoted_piece=promoted_piece)
+        current_board.move_piece(initial_pos, final_pos, promoted_piece=promoted_piece)
         n = n.next()
 
     return dataset
