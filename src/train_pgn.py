@@ -104,7 +104,7 @@ def process_game(pgn_text):
         policy[move_index] = 1.0
         policy = policy / torch.sum(policy)
 
-        value = normalize_stockfish_score(score) if score.isnumeric() else normalize_mate_score(score)
+        value = normalize_stockfish_score(score) if isinstance(score, float) else normalize_mate_score(score)
 
 #        board_state = copy.deepcopy(ed.encode_board(current_board))
         board_state = torch.tensor(ed.encode_board(current_board))
