@@ -138,8 +138,8 @@ class ChessPGNDataset(Dataset):
         self.pgn_file.close()
         raise StopIteration
 
-    def __getitem__(self, index):
-        return RuntimeError("Not implemented")
+    # def __getitem__(self, index):
+    #     return RuntimeError("Not implemented")
 
     def __len__(self):
         # Returning a large number as a placeholder since the exact length is unknown
