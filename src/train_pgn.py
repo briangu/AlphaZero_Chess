@@ -134,6 +134,9 @@ class ChessPGNDataset(Dataset):
         self.pgn_file.close()
         raise StopIteration
 
+    def __getitem__(self, index):
+        return RuntimeError("Not implemented")
+
     def __len__(self):
         # Returning a large number as a placeholder since the exact length is unknown
         return self.game_cnt  # Adjust as needed
@@ -158,7 +161,7 @@ if __name__=="__main__":
     game_cnt = 108201825
     # model_path = sys.argv[3] if len(sys.argv) > 3 else None
     model_path = None
-    dataset = ChessPGNDataset(pgn_path)
+    dataset = ChessPGNDataset(pgn_path, game_cnt)
     batch_size = 128  # You can adjust the batch size as needed
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=1)
     train_chessnet(train_loader, net_to_train=model_path,save_as=out_model_path)
