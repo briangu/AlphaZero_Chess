@@ -39,17 +39,6 @@ def read_games(pgn_path):
     yield None
 
 
-# def get_board_matrix(board):
-#     matrix = [" " * 8 for _ in range(8)]
-
-#     for square in chess.SQUARES:
-#         piece = board.piece_at(square)
-#         if piece:
-#             matrix[square // 8][square % 8] = piece.symbol()
-
-#     return matrix
-
-
 def normalize_stockfish_score(score, max_abs_score=1000):
     # Assuming max_abs_score is the maximum absolute score to be normalized
     if score is None:
@@ -104,14 +93,19 @@ def process_game(pgn_text):
             else:
                 score = mate_score
 
-        policy = torch.zeros(4672, 0.001, dtype=torch.float32)  # Assuming 4672 possible moves
         move_index = ed.encode_action(current_board, initial_pos, final_pos, underpromote=underpromote)
+
+        # TODO: add support for providing a model that predicts the policy and value
+        policy = torch.zeros(4672, 0.001, dtype=torch.float32)  # Assuming 4672 possible moves
         policy[move_index] = 1.0
         policy = policy / torch.sum(policy)
 
         value = normalize_stockfish_score(score) if score.isnumeric() else normalize_mate_score(score)
 
-        board_state = copy.deepcopy(ed.encode_board(current_board))
+#        board_state = copy.deepcopy(ed.encode_board(current_board))
+        board_state = torch.tensor(ed.encode_board(current_board))
+        policy = torch.tensor(policy)
+        value = torch.tensor(value)
         yield (board_state, policy, value)
         n = n.next()
 
