@@ -111,6 +111,7 @@ def process_game(pgn_text):
         policy = torch.tensor(policy)
         value = torch.tensor(value)
         yield (board_state, policy, value)
+        current_board = current_board.make_move(initial_pos, final_pos, underpromote=underpromote)
         n = n.next()
 
     return dataset
