@@ -116,7 +116,6 @@ def train(net, train_loader, epoch_start=0, epoch_stop=20, cpu=0):
 
     losses_per_epoch = []
     for epoch in range(epoch_start, epoch_stop):
-        scheduler.step()
         total_loss = 0.0
         losses_per_batch = []
         for i, data in enumerate(train_loader, 0):
@@ -140,6 +139,7 @@ def train(net, train_loader, epoch_start=0, epoch_stop=20, cpu=0):
         if len(losses_per_epoch) > 100:
             if abs(sum(losses_per_epoch[-4:-1])/3 - sum(losses_per_epoch[-16:-13])/3) <= 0.01:
                 break
+        scheduler.step()
 
     # fig = plt.figure()
     # ax = fig.add_subplot(222)
