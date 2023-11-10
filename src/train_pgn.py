@@ -14,7 +14,7 @@ import sys
 from alpha_net import ChessNet, AlphaLoss
 import os
 from chess_board import board as c_board
-
+from torch.utils.data import IterableDataset
 
 # Function to extract the game result
 def get_game_result(game):
@@ -116,34 +116,24 @@ def process_game(pgn_text):
     return dataset
 
 
-class ChessPGNDataset(Dataset):
+class ChessPGNDataset(IterableDataset):
     def __init__(self, pgn_path, game_cnt):
         self.pgn_path = pgn_path
         self.game_cnt = game_cnt
-        self.pgn_file = open(self.pgn_path, 'r')
 
     def __iter__(self):
-        return self
-
-    def __next__(self):
-        # tobj = tqdm(enumerate(read_games(pgn_path)), total=game_cnt)
-        for i, pgn_text in enumerate(read_games(pgn_path)):
-            if pgn_text is None:
-                break
-            for state, policy, value in process_game(pgn_text):
-                state_tensor = torch.FloatTensor(state)
-                policy_tensor = torch.FloatTensor(policy)
-                value_tensor = torch.FloatTensor(value)
-                yield state_tensor, policy_tensor, value_tensor
-        self.pgn_file.close()
-        raise StopIteration
-
-    # def __getitem__(self, index):
-    #     return RuntimeError("Not implemented")
+        with open(self.pgn_path, 'r') as pgn_file:
+            for pgn_text in read_games(pgn_file):
+                if pgn_text is None:
+                    return  # End of file
+                for state, policy, value in process_game(pgn_text):
+                    state_tensor = torch.FloatTensor(state)
+                    policy_tensor = torch.FloatTensor(policy)
+                    value_tensor = torch.FloatTensor([value])  # Ensure value is a tensor
+                    yield state_tensor, policy_tensor, value_tensor
 
     def __len__(self):
-        # Returning a large number as a placeholder since the exact length is unknown
-        return self.game_cnt  # Adjust as needed
+        return self.game_cnt
 
 
 def train(net, train_loader, epoch_start=0, epoch_stop=20, cpu=0):
