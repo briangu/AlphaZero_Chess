@@ -80,6 +80,15 @@ def convert_board(board):
     return "".join(s)
 
 
+# compare the alphazero board with the python-chess board
+def are_same(chess_board, pychess_board):
+    for i in range(8):
+        for j in range(8):
+            if chess_board[i][j] != pychess_board.piece_at(8 * i + j):
+                return False
+    return True
+
+
 def process_game(pgn_text):
     game = chess.pgn.read_game(io.StringIO(pgn_text))
 
@@ -114,8 +123,9 @@ def process_game(pgn_text):
                 score = mate_score
 
         # print(current_board.current_board)
-        print(convert_board(current_board.current_board))
-        print(n.board())
+        if not are_same(current_board.current_board, n.board()):
+            print(convert_board(current_board.current_board))
+            print(n.board())
         print(last_board.is_castling(n.move), n.move, initial_pos, final_pos, score)
         move_index = ed.encode_action(current_board, initial_pos, final_pos, underpromote=underpromote)
 
