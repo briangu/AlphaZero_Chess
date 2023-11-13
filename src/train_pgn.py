@@ -118,7 +118,7 @@ def process_game(pgn_text):
         # policy = torch.tensor(policy)
         value = torch.tensor(value)
         yield (board_state, policy, value)
-        promoted_piece = n.move.promotion.symbol() if n.move.promotion is not None else None
+        promoted_piece = chess.piece_symbol(n.move.promotion) if n.move.promotion is not None else None
 
         if last_board.is_castling(n.move):
             if last_board.is_kingside_castling(n.move):
