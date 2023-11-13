@@ -191,7 +191,7 @@ def encode_move(board, move, tensor_out=True):
                 idx = 48 + dx
 
     if tensor_out:
-        encoded_move = torch.zeros((8, 8, 73))
+        encoded_move = torch.zeros((8, 8, 73), dtype=torch.float32)
         encoded_move[j, i, idx] = 1
         return encoded_move.flatten()
 
@@ -250,9 +250,9 @@ def process_game(pgn_text):
 
 #        board_state = copy.deepcopy(ed.encode_board(current_board))
         # board_state = torch.tensor(ed.encode_board(current_board))
-        board_state = torch.tensor(encode_pychess_board(last_board))
+        board_state = torch.tensor(encode_pychess_board(last_board), dtype=torch.float32)
         # policy = torch.tensor(policy)
-        value = torch.tensor(value)
+        value = torch.tensor(value, dtype=torch.float32)
         yield (board_state, policy, value)
 
         value = normalize_stockfish_score(score) if isinstance(score, (int,float)) else normalize_mate_score(score)
@@ -285,9 +285,6 @@ class ChessPGNDataset(IterableDataset):
             if pgn_text is None:
                 return  # End of file
             for state, policy, value in process_game(pgn_text):
-                # state_tensor = torch.FloatTensor(state)
-                # policy_tensor = torch.FloatTensor(policy)
-                # value_tensor = torch.FloatTensor([value])  # Ensure value is a tensor
                 yield state, policy, value
 
     def __len__(self):
@@ -313,7 +310,7 @@ def train(net, train_loader, out_model_path, epoch_start=0, epoch_stop=20, cpu=0
         for i, data in enumerate(train_loader, 0):
             state, policy, value = data
             if cuda:
-                state, policy, value = state.cuda().float(), policy.float().cuda(), value.cuda().float()
+                state, policy, value = state.cuda(), policy.cuda(), value.cuda()
             optimizer.zero_grad()
             policy_pred, value_pred = net(state)
             loss = criterion(value_pred[:,0], value, policy_pred, policy)
