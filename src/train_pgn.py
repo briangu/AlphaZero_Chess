@@ -91,6 +91,14 @@ def are_same(chess_board, pychess_board):
                 return False
     return True
 
+# copy the python chess board to the alphazero board
+def copy_board(pychess_board, chess_board):
+    for i in range(8):
+        for j in range(8):
+            piece = pychess_board.piece_at(8 * (7 - i) + j)
+            piece = " " if piece is None else piece.symbol()
+            chess_board.current_board[i][j] = piece
+
 
 def process_game(pgn_text):
     game = chess.pgn.read_game(io.StringIO(pgn_text))
@@ -130,6 +138,7 @@ def process_game(pgn_text):
         if not are_same(current_board.current_board, last_board):
             print("not same:")
             print(convert_board(current_board.current_board))
+            print(last_move)
             print(last_board)
             print(last_board.is_castling(n.move), n.move, initial_pos, final_pos, score)
             raise RuntimeError("Boards are not same")
@@ -147,19 +156,21 @@ def process_game(pgn_text):
         # policy = torch.tensor(policy)
         value = torch.tensor(value)
         yield (board_state, policy, value)
-        promoted_piece = chess.piece_symbol(last_move.promotion) if last_move and last_move.promotion is not None else "Q"
 
-        if last_board.is_castling(n.move):
-            if last_board.is_kingside_castling(n.move):
-                current_board.castle("kingside", inplace=True)
-            else:
-                current_board.castle("queenside", inplace=True)
-        # elif n.move.promotion is not None:
-            # current_board.move_piece(initial_pos, final_pos, promoted_piece=promoted_piece)
-        else:
-            current_board.move_piece(initial_pos, final_pos, promoted_piece=promoted_piece)
-        last_move = n.move
-        last_board = n.board()
+        # promoted_piece = chess.piece_symbol(last_move.promotion) if last_move and last_move.promotion is not None else "Q"
+
+        # if last_board.is_castling(n.move):
+        #     if last_board.is_kingside_castling(n.move):
+        #         current_board.castle("kingside", inplace=True)
+        #     else:
+        #         current_board.castle("queenside", inplace=True)
+        # # elif n.move.promotion is not None:
+        #     # current_board.move_piece(initial_pos, final_pos, promoted_piece=promoted_piece)
+        # else:
+        #     current_board.move_piece(initial_pos, final_pos, promoted_piece=promoted_piece)
+        # last_move = n.move
+        # last_board = n.board()
+        copy_board(n.board(), current_board)
         n = n.next()
 
     return dataset
