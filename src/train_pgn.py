@@ -146,9 +146,9 @@ def process_game(pgn_text):
         move_index = ed.encode_action(current_board, initial_pos, final_pos, underpromote=underpromote)
 
         # TODO: add support for providing a model that predicts the policy and value
-        policy = torch.zeros(4672, dtype=torch.float32) + 0.001  # Assuming 4672 possible moves
+        policy = torch.zeros(4672, dtype=torch.float32) # + 0.001  # Assuming 4672 possible moves
         policy[move_index] = 1.0
-        policy = policy / torch.sum(policy)
+        # policy = policy / torch.sum(policy)
 
 #        board_state = copy.deepcopy(ed.encode_board(current_board))
         board_state = torch.tensor(ed.encode_board(current_board))
