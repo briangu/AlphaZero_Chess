@@ -84,7 +84,10 @@ def convert_board(board):
 def are_same(chess_board, pychess_board):
     for i in range(8):
         for j in range(8):
-            if chess_board[i][j] != pychess_board.piece_at(8 * i + j):
+            piece = pychess_board.piece_at(8 * (7 - i) + j)
+            piece = " " if piece is None else piece.symbol()
+            #print(chess_board[i][j], piece)
+            if chess_board[i][j] != piece:
                 return False
     return True
 
@@ -123,11 +126,12 @@ def process_game(pgn_text):
                 score = mate_score
 
         # print(current_board.current_board)
-        if not are_same(current_board.current_board, n.board()):
+        if not are_same(current_board.current_board, last_board):
             print("not same:")
             print(convert_board(current_board.current_board))
-            print(n.board())
-        print(last_board.is_castling(n.move), n.move, initial_pos, final_pos, score)
+            print(last_board)
+            print(last_board.is_castling(n.move), n.move, initial_pos, final_pos, score)
+            raise RuntimeError("Boards are not same")
         move_index = ed.encode_action(current_board, initial_pos, final_pos, underpromote=underpromote)
 
         # TODO: add support for providing a model that predicts the policy and value
