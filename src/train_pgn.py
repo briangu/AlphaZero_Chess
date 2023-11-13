@@ -109,7 +109,7 @@ def process_game(pgn_text):
     current_board = c_board()
 
     # last_move = game.move
-    # last_board = game.board()
+    last_board = game.board()
     n = game.next()
 
     mate_score = 1 if Result == "1-0" else -1 if Result == "0-1" else 0
