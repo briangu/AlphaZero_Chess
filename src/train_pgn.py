@@ -135,14 +135,14 @@ def process_game(pgn_text):
             else:
                 score = mate_score
 
-        # # print(current_board.current_board)
-        if not are_same(current_board.current_board, last_board):
-        #     print("not same:")
-            print(convert_board(current_board.current_board))
-        #     print(last_move)
-            print(last_board)
-        #     print(last_board.is_castling(n.move), n.move, initial_pos, final_pos, score)
-            raise RuntimeError("Boards are not same")
+        # # # print(current_board.current_board)
+        # if not are_same(current_board.current_board, last_board):
+        # #     print("not same:")
+        #     print(convert_board(current_board.current_board))
+        # #     print(last_move)
+        #     print(last_board)
+        # #     print(last_board.is_castling(n.move), n.move, initial_pos, final_pos, score)
+        #     raise RuntimeError("Boards are not same")
         move_index = ed.encode_action(current_board, initial_pos, final_pos, underpromote=underpromote)
 
         # TODO: add support for providing a model that predicts the policy and value
