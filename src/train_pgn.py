@@ -203,7 +203,7 @@ def process_game(pgn_text):
     headers = game.headers
     Result = headers.get("Result")
 
-    current_board = c_board()
+    # current_board = c_board()
 
     # last_move = game.move
     value = 0.0
