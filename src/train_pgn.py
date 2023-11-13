@@ -294,7 +294,7 @@ class ChessPGNDataset(IterableDataset):
         return self.game_cnt
 
 
-def train(net, train_loader, epoch_start=0, epoch_stop=20, cpu=0):
+def train(net, train_loader, out_model_path, epoch_start=0, epoch_stop=20, cpu=0):
     torch.manual_seed(cpu)
     cuda = torch.cuda.is_available()
     net.train()
@@ -302,10 +302,9 @@ def train(net, train_loader, epoch_start=0, epoch_stop=20, cpu=0):
     optimizer = optim.Adam(net.parameters(), lr=0.003)
     # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[100,200,300,400], gamma=0.2)
     # scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.99)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.99, patience=5, threshold=0.01)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.995, patience=5, threshold=0.01)
 
-
-    losses_per_epoch = []
+    # losses_per_epoch = []
     for epoch in range(epoch_start, epoch_stop):
         total_loss = 0.0
         losses_per_batch = deque(maxlen=100)
@@ -328,14 +327,15 @@ def train(net, train_loader, epoch_start=0, epoch_stop=20, cpu=0):
                 avg_loss = sum(losses_per_batch) / len(losses_per_batch)
                 scheduler.step(avg_loss)
 
-        losses_per_epoch.append(sum(losses_per_batch)/len(losses_per_batch))
-        if len(losses_per_epoch) > 100:
-            if abs(sum(losses_per_epoch[-4:-1])/3 - sum(losses_per_epoch[-16:-13])/3) <= 0.01:
-                break
-        scheduler.step()
+        torch.save({'state_dict': net.state_dict()}, os.path.join(out_model_path, "epoch_{epoch}.pth.tar"))
+        # losses_per_epoch.append(sum(losses_per_batch)/len(losses_per_batch))
+        # if len(losses_per_epoch) > 100:
+        #     if abs(sum(losses_per_epoch[-4:-1])/3 - sum(losses_per_epoch[-16:-13])/3) <= 0.01:
+        #         break
+        # scheduler.step()
 
 
-def train_chessnet(train_loader, net_to_train, save_as):
+def train_chessnet(train_loader, net_to_train, out_model_path):
     net = ChessNet()
     cuda = torch.cuda.is_available()
     if cuda:
@@ -343,8 +343,8 @@ def train_chessnet(train_loader, net_to_train, save_as):
     if net_to_train is not None:
         checkpoint = torch.load(net_to_train)
         net.load_state_dict(checkpoint['state_dict'])
-    train(net,train_loader)
-    torch.save({'state_dict': net.state_dict()}, save_as)
+    train(net,train_loader, out_model_path)
+    # torch.save({'state_dict': net.state_dict()}, save_as)
 
 
 if __name__=="__main__":
