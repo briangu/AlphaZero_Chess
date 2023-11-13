@@ -127,6 +127,75 @@ def encode_pychess_board(board):
 
     return encoded
 
+
+underpromotions = [chess.KNIGHT, chess.BISHOP, chess.ROOK]
+
+def encode_move(board, move, tensor_out=True):
+    from_square = move.from_square
+    to_square = move.to_square
+
+    i, j = chess.square_file(from_square), chess.square_rank(from_square)
+    x, y = chess.square_file(to_square), chess.square_rank(to_square)
+
+    dx, dy = x - i, y - j
+
+    promo = move.promotion
+    if promo is not None and promo != chess.QUEEN:
+        # Encoding underpromotion with 9 unique indices
+        if i == x:
+            file_offset = 0  # No file change
+        elif i > x:
+            file_offset = 1  # Left capture
+        else:
+            file_offset = 2  # Right capture
+        # Calculate the index for underpromotion
+        idx = 64 + 3 * file_offset + underpromotions.index(promo)
+    elif board.piece_type_at(from_square) == chess.KNIGHT:
+        if (x,y) == (i+2,j-1):
+            idx = 56
+        elif (x,y) == (i+2,j+1):
+            idx = 57
+        elif (x,y) == (i+1,j-2):
+            idx = 58
+        elif (x,y) == (i-1,j-2):
+            idx = 59
+        elif (x,y) == (i-2,j+1):
+            idx = 60
+        elif (x,y) == (i-2,j-1):
+            idx = 61
+        elif (x,y) == (i-1,j+2):
+            idx = 62
+        elif (x,y) == (i+1,j+2):
+            idx = 63
+    else:
+        if dx != 0 and dy == 0: # north-south idx 0-13
+            if dx < 0:
+                idx = 7 + dx
+            elif dx > 0:
+                idx = 6 + dx
+        if dx == 0 and dy != 0: # east-west idx 14-27
+            if dy < 0:
+                idx = 21 + dy
+            elif dy > 0:
+                idx = 20 + dy
+        if dx == dy: # NW-SE idx 28-41
+            if dx < 0:
+                idx = 35 + dx
+            if dx > 0:
+                idx = 34 + dx
+        if dx == -dy: # NE-SW idx 42-55
+            if dx < 0:
+                idx = 49 + dx
+            if dx > 0:
+                idx = 48 + dx
+
+    if tensor_out:
+        encoded_move = torch.zeros((8, 8, 73))
+        encoded_move[j, i, idx] = 1
+        return encoded_move.flatten()
+
+    return idx
+
 def process_game(pgn_text):
     game = chess.pgn.read_game(io.StringIO(pgn_text))
 
@@ -170,7 +239,8 @@ def process_game(pgn_text):
         #     print(last_board)
         # #     print(last_board.is_castling(n.move), n.move, initial_pos, final_pos, score)
         #     raise RuntimeError("Boards are not same")
-        move_index = ed.encode_action(current_board, initial_pos, final_pos, underpromote=underpromote)
+        # move_index = ed.encode_action(current_board, initial_pos, final_pos, underpromote=underpromote)
+        move_index = encode_move(last_board, n.move)
 
         # TODO: add support for providing a model that predicts the policy and value
         policy = torch.zeros(4672, dtype=torch.float32) # + 0.001  # Assuming 4672 possible moves
