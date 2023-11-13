@@ -16,6 +16,7 @@ import os
 from chess_board import board as c_board
 from torch.utils.data import IterableDataset
 
+
 # Function to extract the game result
 def get_game_result(game):
     result = game.headers["Result"]
@@ -80,8 +81,10 @@ def process_game(pgn_text):
     mate_score = 1 if Result == "1-0" else -1 if Result == "0-1" else 0
 
     while n is not None:
-        initial_pos = n.move.from_square // 8, n.move.from_square % 8
-        final_pos = n.move.to_square // 8, n.move.to_square % 8
+        # initial_pos = n.move.from_square // 8, n.move.from_square % 8
+        # final_pos = n.move.to_square // 8, n.move.to_square % 8
+        initial_pos = chess.square_file(n.move.from_square), chess.square_rank(n.move.from_square)
+        final_pos = chess.square_file(n.move.to_square), chess.square_rank(n.move.to_square)
         underpromote = convert_underpromotion(n.move.promotion)
 
         e = n.eval()
@@ -97,6 +100,8 @@ def process_game(pgn_text):
             else:
                 score = mate_score
 
+        print(current_board.current_board)
+        print(n.move, initial_pos, final_pos, score, current_board.current_board)
         move_index = ed.encode_action(current_board, initial_pos, final_pos, underpromote=underpromote)
 
         # TODO: add support for providing a model that predicts the policy and value
