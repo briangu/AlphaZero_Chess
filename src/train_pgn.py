@@ -68,6 +68,15 @@ def convert_underpromotion(promotion):
     return promotion_dict.get(promotion)
 
 
+def convert_board(board):
+    s = ["."*8 for _ in range(8)]
+    for i in range(8):
+        for j in range(8):
+            piece = board[i,j]
+            if piece is not " ":
+                s[i,j] = piece
+
+
 def process_game(pgn_text):
     game = chess.pgn.read_game(io.StringIO(pgn_text))
 
@@ -101,7 +110,8 @@ def process_game(pgn_text):
             else:
                 score = mate_score
 
-        print(current_board.current_board)
+        # print(current_board.current_board)
+        print(convert_board(current_board.current_board))
         print(n.board())
         print(last_board.is_castling(n.move), n.move, initial_pos, final_pos, score)
         move_index = ed.encode_action(current_board, initial_pos, final_pos, underpromote=underpromote)
