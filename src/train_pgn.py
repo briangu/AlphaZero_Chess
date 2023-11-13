@@ -201,7 +201,8 @@ def train(net, train_loader, epoch_start=0, epoch_stop=20, cpu=0):
     net.train()
     criterion = AlphaLoss()
     optimizer = optim.Adam(net.parameters(), lr=0.003)
-    scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[100,200,300,400], gamma=0.2)
+    # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[100,200,300,400], gamma=0.2)
+    scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.99)
 
     losses_per_epoch = []
     for epoch in range(epoch_start, epoch_stop):
