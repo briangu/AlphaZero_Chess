@@ -76,6 +76,7 @@ def process_game(pgn_text):
 
     current_board = c_board()
 
+    last_board = game.board()
     n = game.next()
 
     mate_score = 1 if Result == "1-0" else -1 if Result == "0-1" else 0
@@ -101,7 +102,7 @@ def process_game(pgn_text):
                 score = mate_score
 
         print(current_board.current_board)
-        print(n.move, initial_pos, final_pos, score)
+        print(last_board.is_castling(n.move), n.move, initial_pos, final_pos, score)
         move_index = ed.encode_action(current_board, initial_pos, final_pos, underpromote=underpromote)
 
         # TODO: add support for providing a model that predicts the policy and value
@@ -118,6 +119,7 @@ def process_game(pgn_text):
         yield (board_state, policy, value)
         promoted_piece = n.move.promotion.symbol() if n.move.promotion is not None else None
         current_board.move_piece(initial_pos, final_pos, promoted_piece=promoted_piece)
+        last_board = n.board()
         n = n.next()
 
     return dataset
