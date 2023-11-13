@@ -299,14 +299,14 @@ def train(net, train_loader, out_model_path, epoch_start=0, epoch_stop=20, cpu=0
     optimizer = optim.Adam(net.parameters(), lr=0.003)
     # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[100,200,300,400], gamma=0.2)
     # scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.99)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.995, patience=5, threshold=0.01)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.995, patience=1000, threshold=0.01)
 
     torch.save({'state_dict': net.state_dict()}, os.path.join(out_model_path, "epoch_start.pth.tar"))
 
     # losses_per_epoch = []
     for epoch in range(epoch_start, epoch_stop):
         total_loss = 0.0
-        losses_per_batch = deque(maxlen=1000)
+        losses_per_batch = deque(maxlen=100)
         for i, data in enumerate(train_loader, 0):
             state, policy, value = data
             if cuda:
