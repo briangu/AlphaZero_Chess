@@ -16,6 +16,7 @@ import os
 from chess_board import board as c_board
 from torch.utils.data import IterableDataset
 import numpy as np
+from collections import deque
 
 
 # Function to extract the game result
@@ -300,12 +301,14 @@ def train(net, train_loader, epoch_start=0, epoch_stop=20, cpu=0):
     criterion = AlphaLoss()
     optimizer = optim.Adam(net.parameters(), lr=0.003)
     # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[100,200,300,400], gamma=0.2)
-    scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.99)
+    # scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.99)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.99, patience=5, threshold=0.01)
+
 
     losses_per_epoch = []
     for epoch in range(epoch_start, epoch_stop):
         total_loss = 0.0
-        losses_per_batch = []
+        losses_per_batch = deque(maxlen=100)
         for i, data in enumerate(train_loader, 0):
             state, policy, value = data
             if cuda:
@@ -317,12 +320,14 @@ def train(net, train_loader, epoch_start=0, epoch_stop=20, cpu=0):
             optimizer.step()
             total_loss += loss.item()
             if i % 10 == 9:
-                print('Process ID: %d [Epoch: %d, %5d/ %d points] total loss per batch: %.3f' %
-                      (os.getpid(), epoch + 1, (i + 1)*30, len(train_loader.dataset), total_loss/10))
-                print("Policy:", policy[0].argmax().item(), policy_pred[0].argmax().item())
-                print("Value:", value[0].item(), value_pred[0,0].item())
+                print('Process ID: %d [Epoch: %d, %5d/ %d points] total loss per batch: %.3f LR: %6d' %
+                      (os.getpid(), epoch + 1, (i + 1)*30, len(train_loader.dataset), total_loss/10), optimizer.param_groups[0]['lr'])
+                print("Policy:", policy[0].argmax().item(), policy_pred[0].argmax().item(), "Value:", value[0].item(), value_pred[0,0].item())
                 losses_per_batch.append(total_loss/10)
                 total_loss = 0.0
+                avg_loss = sum(losses_per_batch) / len(losses_per_batch)
+                scheduler.step(avg_loss)
+
         losses_per_epoch.append(sum(losses_per_batch)/len(losses_per_batch))
         if len(losses_per_epoch) > 100:
             if abs(sum(losses_per_epoch[-4:-1])/3 - sum(losses_per_epoch[-16:-13])/3) <= 0.01:
