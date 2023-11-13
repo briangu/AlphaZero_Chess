@@ -84,8 +84,8 @@ def process_game(pgn_text):
     while n is not None:
         # initial_pos = n.move.from_square // 8, n.move.from_square % 8
         # final_pos = n.move.to_square // 8, n.move.to_square % 8
-        initial_pos = chess.square_rank(n.move.from_square), chess.square_file(n.move.from_square)
-        final_pos = chess.square_rank(n.move.to_square), chess.square_file(n.move.to_square)
+        initial_pos = 7 - chess.square_rank(n.move.from_square), chess.square_file(n.move.from_square)
+        final_pos = 7 - chess.square_rank(n.move.to_square), chess.square_file(n.move.to_square)
         underpromote = convert_underpromotion(n.move.promotion)
 
         e = n.eval()
