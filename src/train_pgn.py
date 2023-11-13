@@ -69,12 +69,15 @@ def convert_underpromotion(promotion):
 
 
 def convert_board(board):
-    s = ["."*8 for _ in range(8)]
+    s = []
     for i in range(8):
         for j in range(8):
-            piece = board[i,j]
-            if piece is not " ":
-                s[i,j] = piece
+            if board[i][j] == " ":
+                s.append(".")
+            else:
+                s.append(board[i][j])
+        s.append("\n")
+    return "".join(s)
 
 
 def process_game(pgn_text):
