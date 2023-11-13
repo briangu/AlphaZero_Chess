@@ -124,6 +124,7 @@ def process_game(pgn_text):
 
         # print(current_board.current_board)
         if not are_same(current_board.current_board, n.board()):
+            print("not same:")
             print(convert_board(current_board.current_board))
             print(n.board())
         print(last_board.is_castling(n.move), n.move, initial_pos, final_pos, score)
