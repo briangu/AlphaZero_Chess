@@ -240,11 +240,11 @@ def process_game(pgn_text):
         # #     print(last_board.is_castling(n.move), n.move, initial_pos, final_pos, score)
         #     raise RuntimeError("Boards are not same")
         # move_index = ed.encode_action(current_board, initial_pos, final_pos, underpromote=underpromote)
-        move_index = encode_move(last_board, n.move)
+        policy = encode_move(last_board, n.move)
 
         # TODO: add support for providing a model that predicts the policy and value
-        policy = torch.zeros(4672, dtype=torch.float32) # + 0.001  # Assuming 4672 possible moves
-        policy[move_index] = 1.0
+        # policy = torch.zeros(4672, dtype=torch.float32) # + 0.001  # Assuming 4672 possible moves
+        # policy[move_index] = 1.0
         # policy = policy / torch.sum(policy)
 
 #        board_state = copy.deepcopy(ed.encode_board(current_board))
