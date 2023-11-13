@@ -109,6 +109,7 @@ def process_game(pgn_text):
     current_board = c_board()
 
     # last_move = game.move
+    value = 0
     last_board = game.board()
     n = game.next()
 
@@ -149,13 +150,13 @@ def process_game(pgn_text):
         policy[move_index] = 1.0
         policy = policy / torch.sum(policy)
 
-        value = normalize_stockfish_score(score) if isinstance(score, (int,float)) else normalize_mate_score(score)
-
 #        board_state = copy.deepcopy(ed.encode_board(current_board))
         board_state = torch.tensor(ed.encode_board(current_board))
         # policy = torch.tensor(policy)
         value = torch.tensor(value)
         yield (board_state, policy, value)
+
+        value = normalize_stockfish_score(score) if isinstance(score, (int,float)) else normalize_mate_score(score)
 
         # promoted_piece = chess.piece_symbol(last_move.promotion) if last_move and last_move.promotion is not None else "Q"
 
