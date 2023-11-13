@@ -357,4 +357,4 @@ if __name__=="__main__":
     dataset = ChessPGNDataset(pgn_path, game_cnt)
     batch_size = 128  # You can adjust the batch size as needed
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=1)
-    train_chessnet(train_loader, net_to_train=model_path,save_as=out_model_path)
+    train_chessnet(train_loader, net_to_train=model_path,out_model_path=out_model_path)
