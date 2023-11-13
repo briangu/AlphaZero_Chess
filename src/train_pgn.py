@@ -15,6 +15,7 @@ from alpha_net import ChessNet, AlphaLoss
 import os
 from chess_board import board as c_board
 from torch.utils.data import IterableDataset
+import numpy as np
 
 
 # Function to extract the game result
@@ -99,6 +100,32 @@ def copy_board(pychess_board, chess_board):
             piece = " " if piece is None else piece.symbol()
             chess_board.current_board[i][j] = piece
 
+def encode_pychess_board(board):
+    encoded = np.zeros([8, 8, 22]).astype(int)
+    encoder_dict = {"R": 0, "N": 1, "B": 2, "Q": 3, "K": 4, "P": 5,
+                    "r": 6, "n": 7, "b": 8, "q": 9, "k": 10, "p": 11}
+
+    for i in range(8):
+        for j in range(8):
+            piece = board.piece_at(chess.square(j, i))
+            if piece:
+                encoded[i, j, encoder_dict[piece.symbol()]] = 1
+
+    encoded[:, :, 12] = 1 if board.turn else 0
+    encoded[:, :, 13] = 0 if board.has_kingside_castling_rights(chess.WHITE) else 1
+    encoded[:, :, 14] = 0 if board.has_queenside_castling_rights(chess.WHITE) else 1
+    encoded[:, :, 15] = 0 if board.has_kingside_castling_rights(chess.BLACK) else 1
+    encoded[:, :, 16] = 0 if board.has_queenside_castling_rights(chess.BLACK) else 1
+    encoded[:, :, 17] = board.fullmove_number
+    # For repetitions and no progress count, you may need additional logic
+    # encoded[:, :, 18] = ...
+    # encoded[:, :, 19] = ...
+    encoded[:, :, 20] = board.halfmove_clock
+    if board.ep_square:
+        ep_square = chess.square_file(board.ep_square), chess.square_rank(board.ep_square)
+        encoded[ep_square[1], ep_square[0], 21] = 1
+
+    return encoded
 
 def process_game(pgn_text):
     game = chess.pgn.read_game(io.StringIO(pgn_text))
@@ -108,7 +135,7 @@ def process_game(pgn_text):
 
     current_board = c_board()
 
-    last_move = game.move
+    # last_move = game.move
     value = 0.0
     last_board = game.board()
     n = game.next()
@@ -151,25 +178,27 @@ def process_game(pgn_text):
         # policy = policy / torch.sum(policy)
 
 #        board_state = copy.deepcopy(ed.encode_board(current_board))
-        board_state = torch.tensor(ed.encode_board(current_board))
+        # board_state = torch.tensor(ed.encode_board(current_board))
+        board_state = torch.tensor(encode_pychess_board(last_board))
         # policy = torch.tensor(policy)
         value = torch.tensor(value)
         yield (board_state, policy, value)
 
         value = normalize_stockfish_score(score) if isinstance(score, (int,float)) else normalize_mate_score(score)
 
-        promoted_piece = chess.piece_symbol(last_move.promotion) if last_move and last_move.promotion is not None else "Q"
+        # promoted_piece = chess.piece_symbol(last_move.promotion) if last_move and last_move.promotion is not None else "Q"
 
-        if last_board.is_castling(n.move):
-            if last_board.is_kingside_castling(n.move):
-                current_board.castle("kingside", inplace=True)
-            else:
-                current_board.castle("queenside", inplace=True)
-        else:
-            current_board.move_piece(initial_pos, final_pos, promoted_piece=promoted_piece)
-        last_move = n.move
+        # if last_board.is_castling(n.move):
+        #     if last_board.is_kingside_castling(n.move):
+        #         current_board.castle("kingside", inplace=True)
+        #     else:
+        #         current_board.castle("queenside", inplace=True)
+        # else:
+        #     current_board.move_piece(initial_pos, final_pos, promoted_piece=promoted_piece)
+        # last_move = n.move
         last_board = n.board()
-        copy_board(n.board(), current_board)
+        # copy_board(n.board(), current_board)
+
         n = n.next()
 
     return dataset
