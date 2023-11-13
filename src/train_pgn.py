@@ -113,7 +113,7 @@ def process_game(pgn_text):
 
 #        board_state = copy.deepcopy(ed.encode_board(current_board))
         board_state = torch.tensor(ed.encode_board(current_board))
-        policy = torch.tensor(policy)
+        # policy = torch.tensor(policy)
         value = torch.tensor(value)
         yield (board_state, policy, value)
         promoted_piece = n.move.promotion.symbol() if n.move.promotion is not None else None
