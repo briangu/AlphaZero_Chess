@@ -109,7 +109,7 @@ def process_game(pgn_text):
     current_board = c_board()
 
     # last_move = game.move
-    value = 0
+    value = 0.0
     last_board = game.board()
     n = game.next()
 
