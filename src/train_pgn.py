@@ -304,6 +304,8 @@ def train(net, train_loader, out_model_path, epoch_start=0, epoch_stop=20, cpu=0
     # scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.99)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.995, patience=5, threshold=0.01)
 
+    torch.save({'state_dict': net.state_dict()}, os.path.join(out_model_path, "epoch_start.pth.tar"))
+
     # losses_per_epoch = []
     for epoch in range(epoch_start, epoch_stop):
         total_loss = 0.0
