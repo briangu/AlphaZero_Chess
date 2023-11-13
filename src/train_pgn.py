@@ -150,7 +150,7 @@ def encode_move(board, move, tensor_out=True):
         else:
             file_offset = 2  # Right capture
         # Calculate the index for underpromotion
-        idx = 64 + 3 * file_offset + underpromotions.index(promo)
+        idx = 64 + 3 * file_offset + (promo - chess.KNIGHT) # exploit that KNIGHT = 2, BISHOP = 3, ROOK = 4
     elif board.piece_type_at(from_square) == chess.KNIGHT:
         if (x,y) == (i+2,j-1):
             idx = 56
@@ -215,9 +215,9 @@ def process_game(pgn_text):
     while n is not None:
         # initial_pos = n.move.from_square // 8, n.move.from_square % 8
         # final_pos = n.move.to_square // 8, n.move.to_square % 8
-        initial_pos = 7 - chess.square_rank(n.move.from_square), chess.square_file(n.move.from_square)
-        final_pos = 7 - chess.square_rank(n.move.to_square), chess.square_file(n.move.to_square)
-        underpromote = convert_underpromotion(n.move.promotion)
+        # initial_pos = 7 - chess.square_rank(n.move.from_square), chess.square_file(n.move.from_square)
+        # final_pos = 7 - chess.square_rank(n.move.to_square), chess.square_file(n.move.to_square)
+        # underpromote = convert_underpromotion(n.move.promotion)
 
         e = n.eval()
         if e is None: # end of game
