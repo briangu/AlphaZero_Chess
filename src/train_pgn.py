@@ -83,8 +83,8 @@ def process_game(pgn_text):
     while n is not None:
         # initial_pos = n.move.from_square // 8, n.move.from_square % 8
         # final_pos = n.move.to_square // 8, n.move.to_square % 8
-        initial_pos = chess.square_file(n.move.from_square), chess.square_rank(n.move.from_square)
-        final_pos = chess.square_file(n.move.to_square), chess.square_rank(n.move.to_square)
+        initial_pos = chess.square_file(n.move.from_square) - 1, chess.square_rank(n.move.from_square) - 1
+        final_pos = chess.square_file(n.move.to_square) - 1, chess.square_rank(n.move.to_square) - 1
         underpromote = convert_underpromotion(n.move.promotion)
 
         e = n.eval()
@@ -101,7 +101,7 @@ def process_game(pgn_text):
                 score = mate_score
 
         print(current_board.current_board)
-        print(n.move, initial_pos, final_pos, score, current_board.current_board)
+        print(n.move, initial_pos, final_pos, score)
         move_index = ed.encode_action(current_board, initial_pos, final_pos, underpromote=underpromote)
 
         # TODO: add support for providing a model that predicts the policy and value
