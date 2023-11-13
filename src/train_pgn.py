@@ -291,7 +291,7 @@ class ChessPGNDataset(IterableDataset):
         return self.game_cnt
 
 
-def train(net, train_loader, out_model_path, epoch_start=0, epoch_stop=20, cpu=0):
+def train(net, train_loader, out_model_path, epoch_start=0, epoch_stop=20, cpu=0, batch_size=128):
     torch.manual_seed(cpu)
     cuda = torch.cuda.is_available()
     net.train()
@@ -319,7 +319,7 @@ def train(net, train_loader, out_model_path, epoch_start=0, epoch_stop=20, cpu=0
             total_loss += loss.item()
             if i % 10 == 9:
                 print('Process ID: %d [Epoch: %d, %5d/ %d points] total loss per batch: %.3f LR: %f' %
-                      (os.getpid(), epoch + 1, (i + 1)*30, len(train_loader.dataset), total_loss/10, optimizer.param_groups[0]['lr']))
+                      (os.getpid(), epoch + 1, (i + 1)*batch_size, len(train_loader.dataset), total_loss/10, optimizer.param_groups[0]['lr']))
                 print("Policy:", policy[0].argmax().item(), policy_pred[0].argmax().item(), "Value:", value[0].item(), value_pred[0,0].item())
                 losses_per_batch.append(total_loss/10)
                 total_loss = 0.0
@@ -334,7 +334,7 @@ def train(net, train_loader, out_model_path, epoch_start=0, epoch_stop=20, cpu=0
         # scheduler.step()
 
 
-def train_chessnet(train_loader, net_to_train, out_model_path):
+def train_chessnet(train_loader, net_to_train, out_model_path, batch_size=128):
     net = ChessNet()
     cuda = torch.cuda.is_available()
     if cuda:
@@ -342,7 +342,7 @@ def train_chessnet(train_loader, net_to_train, out_model_path):
     if net_to_train is not None:
         checkpoint = torch.load(net_to_train)
         net.load_state_dict(checkpoint['state_dict'])
-    train(net,train_loader, out_model_path)
+    train(net,train_loader, out_model_path, batch_size=batch_size)
     # torch.save({'state_dict': net.state_dict()}, save_as)
 
 
@@ -356,4 +356,4 @@ if __name__=="__main__":
     dataset = ChessPGNDataset(pgn_path, game_cnt)
     batch_size = 128  # You can adjust the batch size as needed
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=1)
-    train_chessnet(train_loader, net_to_train=model_path,out_model_path=out_model_path)
+    train_chessnet(train_loader, net_to_train=model_path,out_model_path=out_model_path, batch_size=batch_size)
