@@ -108,8 +108,8 @@ def process_game(pgn_text):
 
     current_board = c_board()
 
-    last_move = game.move
-    last_board = game.board()
+    # last_move = game.move
+    # last_board = game.board()
     n = game.next()
 
     mate_score = 1 if Result == "1-0" else -1 if Result == "0-1" else 0
@@ -134,13 +134,13 @@ def process_game(pgn_text):
             else:
                 score = mate_score
 
-        # print(current_board.current_board)
+        # # print(current_board.current_board)
         if not are_same(current_board.current_board, last_board):
-            print("not same:")
+        #     print("not same:")
             print(convert_board(current_board.current_board))
-            print(last_move)
+        #     print(last_move)
             print(last_board)
-            print(last_board.is_castling(n.move), n.move, initial_pos, final_pos, score)
+        #     print(last_board.is_castling(n.move), n.move, initial_pos, final_pos, score)
             raise RuntimeError("Boards are not same")
         move_index = ed.encode_action(current_board, initial_pos, final_pos, underpromote=underpromote)
 
@@ -169,7 +169,7 @@ def process_game(pgn_text):
         # else:
         #     current_board.move_piece(initial_pos, final_pos, promoted_piece=promoted_piece)
         # last_move = n.move
-        # last_board = n.board()
+        last_board = n.board()
         copy_board(n.board(), current_board)
         n = n.next()
 
