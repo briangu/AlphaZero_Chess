@@ -307,7 +307,7 @@ def train(net, train_loader, out_model_path, epoch_start=0, epoch_stop=20, cpu=0
     # losses_per_epoch = []
     for epoch in range(epoch_start, epoch_stop):
         total_loss = 0.0
-        losses_per_batch = deque(maxlen=100)
+        losses_per_batch = deque(maxlen=1000)
         for i, data in enumerate(train_loader, 0):
             state, policy, value = data
             if cuda:
