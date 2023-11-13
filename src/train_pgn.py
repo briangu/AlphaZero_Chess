@@ -110,7 +110,7 @@ def process_game(pgn_text):
 
     # last_move = game.move
     value = 0.0
-    last_board = game.board()
+    # last_board = game.board()
     n = game.next()
 
     mate_score = 1 if Result == "1-0" else -1 if Result == "0-1" else 0
@@ -170,7 +170,7 @@ def process_game(pgn_text):
         # else:
         #     current_board.move_piece(initial_pos, final_pos, promoted_piece=promoted_piece)
         # last_move = n.move
-        last_board = n.board()
+        # last_board = n.board()
         copy_board(n.board(), current_board)
         n = n.next()
 
