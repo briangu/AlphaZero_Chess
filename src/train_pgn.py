@@ -122,9 +122,9 @@ def process_game(pgn_text):
         current_board.move_piece(initial_pos, final_pos, promoted_piece=promoted_piece)
         if last_board.is_castling(n.move):
             if last_board.is_kingside_castling(n.move):
-                current_board.castle("kingside")
+                current_board.castle("kingside", inplace=True)
             else:
-                current_board.castle("queenside")
+                current_board.castle("queenside", inplace=True)
         # else:
         #     current_board.move_piece(initial_pos, final_pos, promoted_piece=promoted_piece)
         last_board = n.board()
