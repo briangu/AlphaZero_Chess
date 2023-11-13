@@ -108,9 +108,9 @@ def process_game(pgn_text):
 
     current_board = c_board()
 
-    # last_move = game.move
+    last_move = game.move
     value = 0.0
-    # last_board = game.board()
+    last_board = game.board()
     n = game.next()
 
     mate_score = 1 if Result == "1-0" else -1 if Result == "0-1" else 0
@@ -158,19 +158,17 @@ def process_game(pgn_text):
 
         value = normalize_stockfish_score(score) if isinstance(score, (int,float)) else normalize_mate_score(score)
 
-        # promoted_piece = chess.piece_symbol(last_move.promotion) if last_move and last_move.promotion is not None else "Q"
+        promoted_piece = chess.piece_symbol(last_move.promotion) if last_move and last_move.promotion is not None else "Q"
 
-        # if last_board.is_castling(n.move):
-        #     if last_board.is_kingside_castling(n.move):
-        #         current_board.castle("kingside", inplace=True)
-        #     else:
-        #         current_board.castle("queenside", inplace=True)
-        # # elif n.move.promotion is not None:
-        #     # current_board.move_piece(initial_pos, final_pos, promoted_piece=promoted_piece)
-        # else:
-        #     current_board.move_piece(initial_pos, final_pos, promoted_piece=promoted_piece)
-        # last_move = n.move
-        # last_board = n.board()
+        if last_board.is_castling(n.move):
+            if last_board.is_kingside_castling(n.move):
+                current_board.castle("kingside", inplace=True)
+            else:
+                current_board.castle("queenside", inplace=True)
+        else:
+            current_board.move_piece(initial_pos, final_pos, promoted_piece=promoted_piece)
+        last_move = n.move
+        last_board = n.board()
         copy_board(n.board(), current_board)
         n = n.next()
 
