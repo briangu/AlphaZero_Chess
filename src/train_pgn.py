@@ -310,9 +310,10 @@ def process_game(pgn_text, last_n_moves=8):
         policy = encode_move(last_board, n.move)
         encoded_board = torch.tensor(encode_pychess_board(last_board), dtype=torch.float32)
         board_state_history.append(encoded_board)
-        board_stack = torch.stack(list(board_state_history))
-        value = torch.tensor(value, dtype=torch.float32)
-        yield (board_stack, policy, value)
+        if last_board.fullmove_number < 20 and torch.rand(1) < 0.5:
+            board_stack = torch.stack(list(board_state_history))
+            value = torch.tensor(value, dtype=torch.float32)
+            yield (board_stack, policy, value)
 
         value = normalize_stockfish_score(score) if isinstance(score, (int,float)) else normalize_mate_score(score)
 
