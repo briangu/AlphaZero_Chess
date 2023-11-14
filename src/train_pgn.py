@@ -197,27 +197,102 @@ def encode_move(board, move, tensor_out=True):
 
     return idx
 
-def process_game(pgn_text):
+# def process_game(pgn_text):
+#     game = chess.pgn.read_game(io.StringIO(pgn_text))
+
+#     headers = game.headers
+#     Result = headers.get("Result")
+
+#     # current_board = c_board()
+
+#     # last_move = game.move
+#     value = 0.0
+#     last_board = game.board()
+#     n = game.next()
+
+#     mate_score = 1 if Result == "1-0" else -1 if Result == "0-1" else 0
+
+#     while n is not None:
+#         # initial_pos = n.move.from_square // 8, n.move.from_square % 8
+#         # final_pos = n.move.to_square // 8, n.move.to_square % 8
+#         # initial_pos = 7 - chess.square_rank(n.move.from_square), chess.square_file(n.move.from_square)
+#         # final_pos = 7 - chess.square_rank(n.move.to_square), chess.square_file(n.move.to_square)
+#         # underpromote = convert_underpromotion(n.move.promotion)
+
+#         e = n.eval()
+#         if e is None: # end of game
+#             score = mate_score
+#         else:
+#             r = e.relative
+#             if r is not None:
+#                 if r.is_mate():
+#                     score = mate_score
+#                 else:
+#                     score = r.score()
+#             else:
+#                 score = mate_score
+
+#         # # # print(current_board.current_board)
+#         # if not are_same(current_board.current_board, last_board):
+#         # #     print("not same:")
+#         #     print(convert_board(current_board.current_board))
+#         # #     print(last_move)
+#         #     print(last_board)
+#         # #     print(last_board.is_castling(n.move), n.move, initial_pos, final_pos, score)
+#         #     raise RuntimeError("Boards are not same")
+#         # move_index = ed.encode_action(current_board, initial_pos, final_pos, underpromote=underpromote)
+#         policy = encode_move(last_board, n.move)
+
+#         # TODO: add support for providing a model that predicts the policy and value
+#         # policy = torch.zeros(4672, dtype=torch.float32) # + 0.001  # Assuming 4672 possible moves
+#         # policy[move_index] = 1.0
+#         # policy = policy / torch.sum(policy)
+
+# #        board_state = copy.deepcopy(ed.encode_board(current_board))
+#         # board_state = torch.tensor(ed.encode_board(current_board))
+#         board_state = torch.tensor(encode_pychess_board(last_board), dtype=torch.float32)
+#         # policy = torch.tensor(policy)
+#         value = torch.tensor(value, dtype=torch.float32)
+#         yield (board_state, policy, value)
+
+#         value = normalize_stockfish_score(score) if isinstance(score, (int,float)) else normalize_mate_score(score)
+
+#         # promoted_piece = chess.piece_symbol(last_move.promotion) if last_move and last_move.promotion is not None else "Q"
+
+#         # if last_board.is_castling(n.move):
+#         #     if last_board.is_kingside_castling(n.move):
+#         #         current_board.castle("kingside", inplace=True)
+#         #     else:
+#         #         current_board.castle("queenside", inplace=True)
+#         # else:
+#         #     current_board.move_piece(initial_pos, final_pos, promoted_piece=promoted_piece)
+#         # last_move = n.move
+#         last_board = n.board()
+#         # copy_board(n.board(), current_board)
+
+#         n = n.next()
+
+#     return dataset
+
+
+def process_game(pgn_text, last_n_moves=8):
     game = chess.pgn.read_game(io.StringIO(pgn_text))
 
     headers = game.headers
     Result = headers.get("Result")
 
-    # current_board = c_board()
-
-    # last_move = game.move
     value = 0.0
     last_board = game.board()
     n = game.next()
 
     mate_score = 1 if Result == "1-0" else -1 if Result == "0-1" else 0
 
+    board_state_history = deque(maxlen=N)
+    zero_state = torch.zeros_like(torch.tensor(encode_pychess_board(game.board()), dtype=torch.float32))  # Adjust the shape/type as necessary
+    for _ in range(last_n_moves):
+        board_state_history.append(zero_state)
+
     while n is not None:
-        # initial_pos = n.move.from_square // 8, n.move.from_square % 8
-        # final_pos = n.move.to_square // 8, n.move.to_square % 8
-        # initial_pos = 7 - chess.square_rank(n.move.from_square), chess.square_file(n.move.from_square)
-        # final_pos = 7 - chess.square_rank(n.move.to_square), chess.square_file(n.move.to_square)
-        # underpromote = convert_underpromotion(n.move.promotion)
 
         e = n.eval()
         if e is None: # end of game
@@ -232,44 +307,16 @@ def process_game(pgn_text):
             else:
                 score = mate_score
 
-        # # # print(current_board.current_board)
-        # if not are_same(current_board.current_board, last_board):
-        # #     print("not same:")
-        #     print(convert_board(current_board.current_board))
-        # #     print(last_move)
-        #     print(last_board)
-        # #     print(last_board.is_castling(n.move), n.move, initial_pos, final_pos, score)
-        #     raise RuntimeError("Boards are not same")
-        # move_index = ed.encode_action(current_board, initial_pos, final_pos, underpromote=underpromote)
         policy = encode_move(last_board, n.move)
-
-        # TODO: add support for providing a model that predicts the policy and value
-        # policy = torch.zeros(4672, dtype=torch.float32) # + 0.001  # Assuming 4672 possible moves
-        # policy[move_index] = 1.0
-        # policy = policy / torch.sum(policy)
-
-#        board_state = copy.deepcopy(ed.encode_board(current_board))
-        # board_state = torch.tensor(ed.encode_board(current_board))
-        board_state = torch.tensor(encode_pychess_board(last_board), dtype=torch.float32)
-        # policy = torch.tensor(policy)
+        encoded_board = torch.tensor(encode_pychess_board(last_board), dtype=torch.float32)
+        board_state_history.append(encoded_board)
+        board_stack = torch.stack(list(board_state_history))
         value = torch.tensor(value, dtype=torch.float32)
-        yield (board_state, policy, value)
+        yield (board_stack, policy, value)
 
         value = normalize_stockfish_score(score) if isinstance(score, (int,float)) else normalize_mate_score(score)
 
-        # promoted_piece = chess.piece_symbol(last_move.promotion) if last_move and last_move.promotion is not None else "Q"
-
-        # if last_board.is_castling(n.move):
-        #     if last_board.is_kingside_castling(n.move):
-        #         current_board.castle("kingside", inplace=True)
-        #     else:
-        #         current_board.castle("queenside", inplace=True)
-        # else:
-        #     current_board.move_piece(initial_pos, final_pos, promoted_piece=promoted_piece)
-        # last_move = n.move
         last_board = n.board()
-        # copy_board(n.board(), current_board)
-
         n = n.next()
 
     return dataset
