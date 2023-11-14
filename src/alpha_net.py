@@ -21,10 +21,10 @@ class board_data(Dataset):
         return self.X[idx].transpose(2,0,1), self.y_p[idx], self.y_v[idx]
 
 class ConvBlock(nn.Module):
-    def __init__(self):
+    def __init__(self, last_n_moves=8):
         super(ConvBlock, self).__init__()
         self.action_size = 8*8*73
-        self.conv1 = nn.Conv2d(22, 256, 3, stride=1, padding=1)
+        self.conv1 = nn.Conv2d(22*last_n_moves, 256, 3, stride=1, padding=1)
         self.bn1 = nn.BatchNorm2d(256)
 
     def forward(self, s):
