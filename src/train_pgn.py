@@ -340,7 +340,7 @@ class ChessPGNDataset(IterableDataset):
             WhiteElo = int(headers.get("WhiteElo") or 1000)
             if BlackElo < self.min_black_elo or WhiteElo < self.min_white_elo:
                 continue
-            for state, policy, value in process_game(pgn_text, last_n_moves=self.last_n_moves):
+            for state, policy, value in process_game(game, last_n_moves=self.last_n_moves):
                 yield state, policy, value
 
     def __len__(self):
