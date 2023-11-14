@@ -23,12 +23,13 @@ class board_data(Dataset):
 class ConvBlock(nn.Module):
     def __init__(self, last_n_moves=8):
         super(ConvBlock, self).__init__()
+        self.last_n_moves = last_n_moves
         self.action_size = 8*8*73
         self.conv1 = nn.Conv2d(22*last_n_moves, 256, 3, stride=1, padding=1)
         self.bn1 = nn.BatchNorm2d(256)
 
     def forward(self, s):
-        s = s.view(-1, 22, 8, 8)  # batch_size x channels x board_x x board_y
+        s = s.view(-1, 22*self.last_n_moves, 8, 8)  # batch_size x channels x board_x x board_y
         s = F.relu(self.bn1(self.conv1(s)))
         return s
 
