@@ -275,9 +275,7 @@ def encode_move(board, move, tensor_out=True):
 #     return dataset
 
 
-def process_game(pgn_text, last_n_moves=8):
-    game = chess.pgn.read_game(io.StringIO(pgn_text))
-
+def process_game(game, last_n_moves=8):
     headers = game.headers
     Result = headers.get("Result")
 
@@ -320,19 +318,28 @@ def process_game(pgn_text, last_n_moves=8):
         last_board = n.board()
         n = n.next()
 
-    return dataset
+    # return dataset
 
 
 class ChessPGNDataset(IterableDataset):
-    def __init__(self, pgn_path, game_cnt, last_n_moves=8):
+    def __init__(self, pgn_path, game_cnt, last_n_moves=8, min_black_elo=1500, min_white_elo=1500):
         self.pgn_path = pgn_path
         self.game_cnt = game_cnt
         self.last_n_moves = last_n_moves
+        self.min_black_elo = min_black_elo
+        self.min_white_elo = min_white_elo
 
     def __iter__(self):
         for pgn_text in read_games(self.pgn_path):
             if pgn_text is None:
                 return  # End of file
+            game = chess.pgn.read_game(io.StringIO(pgn_text))
+
+            headers = game.headers
+            BlackElo = int(headers.get("BlackElo") or 1000)
+            WhiteElo = int(headers.get("WhiteElo") or 1000)
+            if BlackElo < self.min_black_elo or WhiteElo < self.min_white_elo:
+                continue
             for state, policy, value in process_game(pgn_text, last_n_moves=self.last_n_moves):
                 yield state, policy, value
 
