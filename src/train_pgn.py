@@ -373,9 +373,10 @@ def train(net, train_loader, out_model_path, epoch_start=0, epoch_stop=20, cpu=0
                 total_loss = 0.0
                 # avg_loss = sum(losses_per_batch) / len(losses_per_batch)
                 # scheduler.step(avg_loss)
-            if (i+1) % 100_000_000 == 0:
+            batch_i = (i+1)*batch_size
+            if batch_i % 100_000_000 == 0:
                 torch.save({'state_dict': net.state_dict()}, os.path.join(out_model_path, f"epoch_{epoch}_{i}.pth.tar"))
-            elif (i+1) % 1_000_000 == 0:
+            if batch_i % 1_000_000 == 0:
                 scheduler.step()
 
         torch.save({'state_dict': net.state_dict()}, os.path.join(out_model_path, f"epoch_{epoch}.pth.tar"))
