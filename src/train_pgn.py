@@ -346,15 +346,15 @@ def train(net, train_loader, out_model_path, epoch_start=0, epoch_stop=20, cpu=0
     criterion = AlphaLoss()
     optimizer = optim.Adam(net.parameters(), lr=0.003)
     # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[100,200,300,400], gamma=0.2)
-    # scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.99)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.99, patience=1000, threshold=0.01)
+    scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.99)
+    # scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.99, patience=1000, threshold=0.01)
 
     torch.save({'state_dict': net.state_dict()}, os.path.join(out_model_path, "epoch_start.pth.tar"))
 
     # losses_per_epoch = []
     for epoch in range(epoch_start, epoch_stop):
         total_loss = 0.0
-        losses_per_batch = deque(maxlen=100)
+        # losses_per_batch = deque(maxlen=100)
         for i, data in enumerate(train_loader, 0):
             state, policy, value = data
             if cuda:
@@ -369,12 +369,14 @@ def train(net, train_loader, out_model_path, epoch_start=0, epoch_stop=20, cpu=0
                 print('Process ID: %d [Epoch: %d, %5d/ %d points] total loss per batch: %.3f LR: %f' %
                       (os.getpid(), epoch + 1, (i + 1)*batch_size, len(train_loader.dataset), total_loss/10, optimizer.param_groups[0]['lr']))
                 print("Policy:", policy[0].argmax().item(), policy_pred[0].argmax().item(), "Value:", value[0].item(), value_pred[0,0].item())
-                losses_per_batch.append(total_loss/10)
+                # losses_per_batch.append(total_loss/10)
                 total_loss = 0.0
-                avg_loss = sum(losses_per_batch) / len(losses_per_batch)
-                scheduler.step(avg_loss)
-            if i % 100_000_000 == 0:
+                # avg_loss = sum(losses_per_batch) / len(losses_per_batch)
+                # scheduler.step(avg_loss)
+            if (i+1) % 100_000_000 == 0:
                 torch.save({'state_dict': net.state_dict()}, os.path.join(out_model_path, f"epoch_{epoch}_{i}.pth.tar"))
+            elif (i+1) % 1_000_000 == 0:
+                scheduler.step()
 
         torch.save({'state_dict': net.state_dict()}, os.path.join(out_model_path, f"epoch_{epoch}.pth.tar"))
         # losses_per_epoch.append(sum(losses_per_batch)/len(losses_per_batch))
