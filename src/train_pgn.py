@@ -323,15 +323,16 @@ def process_game(pgn_text, last_n_moves=8):
 
 
 class ChessPGNDataset(IterableDataset):
-    def __init__(self, pgn_path, game_cnt):
+    def __init__(self, pgn_path, game_cnt, last_n_moves=8):
         self.pgn_path = pgn_path
         self.game_cnt = game_cnt
+        self.last_n_moves = last_n_moves
 
     def __iter__(self):
         for pgn_text in read_games(self.pgn_path):
             if pgn_text is None:
                 return  # End of file
-            for state, policy, value in process_game(pgn_text):
+            for state, policy, value in process_game(pgn_text, last_n_moves=self.last_n_moves):
                 yield state, policy, value
 
     def __len__(self):
@@ -383,8 +384,8 @@ def train(net, train_loader, out_model_path, epoch_start=0, epoch_stop=20, cpu=0
         # scheduler.step()
 
 
-def train_chessnet(train_loader, net_to_train, out_model_path, batch_size=128):
-    net = ChessNet()
+def train_chessnet(train_loader, net_to_train, out_model_path, batch_size=128, last_n_moves=8):
+    net = ChessNet(last_n_moves=last_n_moves)
     cuda = torch.cuda.is_available()
     if cuda:
         net.cuda()
@@ -401,8 +402,9 @@ if __name__=="__main__":
     pgn_path = "/data/lichess_db_standard_rated_2023-02.pgn"
     game_cnt = 108201825
     # model_path = sys.argv[3] if len(sys.argv) > 3 else None
+    last_n_moves = 8
     model_path = None
-    dataset = ChessPGNDataset(pgn_path, game_cnt)
+    dataset = ChessPGNDataset(pgn_path, game_cnt, last_n_moves)
     batch_size = 128  # You can adjust the batch size as needed
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=1)
     train_chessnet(train_loader, net_to_train=model_path,out_model_path=out_model_path, batch_size=batch_size)
