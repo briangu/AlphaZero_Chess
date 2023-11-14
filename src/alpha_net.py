@@ -79,9 +79,9 @@ class OutBlock(nn.Module):
         return p, v
 
 class ChessNet(nn.Module):
-    def __init__(self):
+    def __init__(self, last_n_moves=8):
         super(ChessNet, self).__init__()
-        self.conv = ConvBlock()
+        self.conv = ConvBlock(last_n_moves=last_n_moves)
         for block in range(19):
             setattr(self, "res_%i" % block,ResBlock())
         self.outblock = OutBlock()
