@@ -287,7 +287,7 @@ def process_game(pgn_text, last_n_moves=8):
 
     mate_score = 1 if Result == "1-0" else -1 if Result == "0-1" else 0
 
-    board_state_history = deque(maxlen=N)
+    board_state_history = deque(maxlen=last_n_moves)
     zero_state = torch.zeros_like(torch.tensor(encode_pychess_board(game.board()), dtype=torch.float32))  # Adjust the shape/type as necessary
     for _ in range(last_n_moves):
         board_state_history.append(zero_state)
