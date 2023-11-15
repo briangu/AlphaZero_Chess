@@ -17,7 +17,7 @@ from chess_board import board as c_board
 from torch.utils.data import IterableDataset
 import numpy as np
 from collections import deque
-import time
+# import time
 import chess
 import numpy as np
 
@@ -143,7 +143,7 @@ def encode_pychess_board(board):
         ep_square = chess.square_file(board.ep_square), chess.square_rank(board.ep_square)
         encoded[ep_square[1], ep_square[0], 21] = 1
 
-    return encoded
+    return torch.tensor(encoded, dtype=torch.float32)
 
 
 underpromotions = [chess.KNIGHT, chess.BISHOP, chess.ROOK]
@@ -365,7 +365,7 @@ def process_game(game, last_n_moves=8):
     mate_score = 1 if Result == "1-0" else -1 if Result == "0-1" else 0
 
     board_state_history = deque(maxlen=last_n_moves)
-    zero_state = torch.zeros_like(torch.tensor(encode_pychess_board(game.board()), dtype=torch.float32))  # Adjust the shape/type as necessary
+    zero_state = torch.zeros_like(encode_pychess_board(game.board()))  # Adjust the shape/type as necessary
     for _ in range(last_n_moves):
         board_state_history.append(zero_state)
 
