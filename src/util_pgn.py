@@ -215,65 +215,193 @@ def encode_move(board, move, tensor_out=True):
     return idx
 
 
-def decode_move(encoded, board):
-    encoded_a = np.zeros([4672])
-    encoded_a[encoded] = 1
-    encoded_a = encoded_a.reshape(8, 8, 73)
-    a, b, c = np.where(encoded_a == 1)
+# def decode_move(encoded, board):
+#     encoded_a = np.zeros([4672])
+#     encoded_a[encoded] = 1
+#     encoded_a = encoded_a.reshape(8, 8, 73)
+#     a, b, c = np.where(encoded_a == 1)
 
-    for pos in zip(a, b, c):
-        i, j, k = pos
-        initial_square = chess.square(j, i)
-        final_square = None
-        promotion = None
+#     for pos in zip(a, b, c):
+#         i, j, k = pos
+#         initial_square = chess.square(j, i)
+#         final_square = None
+#         promotion = None
 
-        # Decode the move based on the index k
-        if 0 <= k <= 55:
-            # Regular and knight moves
-            dx, dy = decode_regular_and_knight_moves(k)
-            final_square = chess.square(j + dx, i + dy)
-        elif 56 <= k <= 72:
-            # Underpromotion moves
-            final_square, promotion = decode_underpromotion_moves(k, i, j, board.turn)
+#         # Decode the move based on the index k
+#         if 0 <= k <= 55:
+#             # Regular and knight moves
+#             dx, dy = decode_regular_and_knight_moves(k)
+#             final_square = chess.square(j + dx, i + dy)
+#         elif 56 <= k <= 72:
+#             # Underpromotion moves
+#             final_square, promotion = decode_underpromotion_moves(k, i, j, board.turn)
 
-        # Auto-queen promotion for pawn reaching last rank without specified promotion
-        if board.piece_at(initial_square) == chess.Piece(chess.PAWN, board.turn) and chess.square_rank(final_square) in [0, 7] and promotion is None:
-            promotion = chess.QUEEN
+#         # Auto-queen promotion for pawn reaching last rank without specified promotion
+#         if board.piece_at(initial_square) == chess.Piece(chess.PAWN, board.turn) and chess.square_rank(final_square) in [0, 7] and promotion is None:
+#             promotion = chess.QUEEN
 
-        if final_square is not None:
-            return chess.Move(initial_square, final_square, promotion)
+#         if final_square is not None:
+#             return chess.Move(initial_square, final_square, promotion)
 
-    raise ValueError("Invalid encoded move")
+#     raise ValueError("Invalid encoded move")
 
-def decode_regular_and_knight_moves(k):
-    if 0 <= k <= 13:
-        # North-south moves
-        return (k - 7, 0) if k < 7 else (k - 6, 0)
-    elif 14 <= k <= 27:
-        # East-west moves
-        return (0, k - 21) if k < 21 else (0, k - 20)
-    elif 28 <= k <= 41:
-        # NW-SE diagonal moves
-        dx = (k - 35) if k < 35 else (k - 34)
-        return (dx, dx)
-    elif 42 <= k <= 55:
-        # NE-SW diagonal moves
-        dx = (k - 49) if k < 49 else (k - 48)
-        return (dx, -dx)
-    elif 56 <= k <= 63:
-        # Knight moves
-        knight_moves = [(2, -1), (2, 1), (1, -2), (-1, -2), (-2, 1), (-2, -1), (-1, 2), (1, 2)]
-        return knight_moves[k - 56]
+# def decode_regular_and_knight_moves(k):
+#     if 0 <= k <= 13:
+#         # North-south moves
+#         return (k - 7, 0) if k < 7 else (k - 6, 0)
+#     elif 14 <= k <= 27:
+#         # East-west moves
+#         return (0, k - 21) if k < 21 else (0, k - 20)
+#     elif 28 <= k <= 41:
+#         # NW-SE diagonal moves
+#         dx = (k - 35) if k < 35 else (k - 34)
+#         return (dx, dx)
+#     elif 42 <= k <= 55:
+#         # NE-SW diagonal moves
+#         dx = (k - 49) if k < 49 else (k - 48)
+#         return (dx, -dx)
+#     elif 56 <= k <= 63:
+#         # Knight moves
+#         knight_moves = [(2, -1), (2, 1), (1, -2), (-1, -2), (-2, 1), (-2, -1), (-1, 2), (1, 2)]
+#         return knight_moves[k - 56]
 
-def decode_underpromotion_moves(k, i, j, turn):
-    file_offset, promo = divmod(k - 64, 3)
-    promo_piece = [chess.ROOK, chess.KNIGHT, chess.BISHOP][promo]
+# def decode_underpromotion_moves(k, i, j, turn):
+#     file_offset, promo = divmod(k - 64, 3)
+#     promo_piece = [chess.ROOK, chess.KNIGHT, chess.BISHOP][promo]
 
-    dx = 0 if file_offset == 0 else (-1 if file_offset == 1 else 1)
-    dy = -1 if turn == chess.WHITE else 1
+#     dx = 0 if file_offset == 0 else (-1 if file_offset == 1 else 1)
+#     dy = -1 if turn == chess.WHITE else 1
 
-    final_square = chess.square(j + dx, i + dy)
-    return final_square, promo_piece
+#     final_square = chess.square(j + dx, i + dy)
+#     return final_square, promo_piece
+
+
+def decode_action(board,encoded):
+    encoded_a = np.zeros([4672]); encoded_a[encoded] = 1; encoded_a = encoded_a.reshape(8,8,73)
+    a,b,c = np.where(encoded_a == 1); # i,j,k = i[0],j[0],k[0]
+    i_pos, f_pos, prom = [], [], []
+    for pos in zip(a,b,c):
+        i,j,k = pos
+        initial_pos = (i,j)
+        promoted = None
+        if 0 <= k <= 13:
+            dy = 0
+            if k < 7:
+                dx = k - 7
+            else:
+                dx = k - 6
+            final_pos = (i + dx, j + dy)
+        elif 14 <= k <= 27:
+            dx = 0
+            if k < 21:
+                dy = k - 21
+            else:
+                dy = k - 20
+            final_pos = (i + dx, j + dy)
+        elif 28 <= k <= 41:
+            if k < 35:
+                dy = k - 35
+            else:
+                dy = k - 34
+            dx = dy
+            final_pos = (i + dx, j + dy)
+        elif 42 <= k <= 55:
+            if k < 49:
+                dx = k - 49
+            else:
+                dx = k - 48
+            dy = -dx
+            final_pos = (i + dx, j + dy)
+        elif 56 <= k <= 63:
+            if k == 56:
+                final_pos = (i+2,j-1)
+            elif k == 57:
+                final_pos = (i+2,j+1)
+            elif k == 58:
+                final_pos = (i+1,j-2)
+            elif k == 59:
+                final_pos = (i-1,j-2)
+            elif k == 60:
+                final_pos = (i-2,j+1)
+            elif k == 61:
+                final_pos = (i-2,j-1)
+            elif k == 62:
+                final_pos = (i-1,j+2)
+            elif k == 63:
+                final_pos = (i+1,j+2)
+        else:
+            if k == 64:
+                if board.turn == chess.WHITE:
+                    final_pos = (i-1,j)
+                    promoted = "R"
+                if board.turn == chess.BLACK:
+                    final_pos = (i+1,j)
+                    promoted = "r"
+            if k == 65:
+                if board.turn == chess.WHITE:
+                    final_pos = (i-1,j)
+                    promoted = "N"
+                if board.turn == chess.BLACK:
+                    final_pos = (i+1,j)
+                    promoted = "n"
+            if k == 66:
+                if board.turn == chess.WHITE:
+                    final_pos = (i-1,j)
+                    promoted = "B"
+                if board.turn == chess.BLACK:
+                    final_pos = (i+1,j)
+                    promoted = "b"
+            if k == 67:
+                if board.turn == chess.WHITE:
+                    final_pos = (i-1,j-1)
+                    promoted = "R"
+                if board.turn == chess.BLACK:
+                    final_pos = (i+1,j-1)
+                    promoted = "r"
+            if k == 68:
+                if board.turn == chess.WHITE:
+                    final_pos = (i-1,j-1)
+                    promoted = "N"
+                if board.turn == chess.BLACK:
+                    final_pos = (i+1,j-1)
+                    promoted = "n"
+            if k == 69:
+                if board.turn == chess.WHITE:
+                    final_pos = (i-1,j-1)
+                    promoted = "B"
+                if board.turn == chess.BLACK:
+                    final_pos = (i+1,j-1)
+                    promoted = "b"
+            if k == 70:
+                if board.turn == chess.WHITE:
+                    final_pos = (i-1,j+1)
+                    promoted = "R"
+                if board.turn == chess.BLACK:
+                    final_pos = (i+1,j+1)
+                    promoted = "r"
+            if k == 71:
+                if board.turn == chess.WHITE:
+                    final_pos = (i-1,j+1)
+                    promoted = "N"
+                if board.turn == chess.BLACK:
+                    final_pos = (i+1,j+1)
+                    promoted = "n"
+            if k == 72:
+                if board.turn == chess.WHITE:
+                    final_pos = (i-1,j+1)
+                    promoted = "B"
+                if board.turn == chess.BLACK:
+                    final_pos = (i+1,j+1)
+                    promoted = "b"
+        piece = board.piece_at(chess.square(i,j))
+        symbol = piece.symbol() if piece else " "
+        if symbol in ["P","p"] and final_pos[0] in [0,7] and promoted == None: # auto-queen promotion for pawn
+            if board.turn == chess.WHITE:
+                promoted = "Q"
+            else:
+                promoted = "q"
+        i_pos.append(initial_pos); f_pos.append(final_pos), prom.append(promoted)
+    return chess.Move(chess.square(*initial_pos), chess.square(*final_pos), promoted=promoted)
 
 
 # def process_game(pgn_text):

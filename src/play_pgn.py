@@ -68,6 +68,7 @@ def main():
             move, value = get_model_move(board, model, move_history)
             print(value)
         else:
+            print()
             # User's turn
             move = input("Enter your move: ")
             try:
