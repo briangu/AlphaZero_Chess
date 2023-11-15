@@ -233,7 +233,7 @@ if __name__=="__main__":
     import sys
     current_net_filename=sys.argv[1]
     mp.set_start_method("spawn",force=True)
-    net = ChessNet()
+    net = ChessNet(last_n_moves=8)
     cuda = torch.cuda.is_available()
     if cuda:
         net.cuda()
@@ -241,7 +241,7 @@ if __name__=="__main__":
     net.eval()
     print("hi")
     # current_net_filename = os.path.join("./model_data/", net_to_play)
-    torch.save({'state_dict': net.state_dict()}, current_net_filename)
+    # torch.save({'state_dict': net.state_dict()}, current_net_filename)
     checkpoint = torch.load(current_net_filename)
     net.load_state_dict(checkpoint['state_dict'])
     processes = []
