@@ -368,7 +368,7 @@ def train(net, train_loader, out_model_path, epoch_start=0, epoch_stop=20, cpu=0
     criterion = AlphaLoss()
     optimizer = optim.Adam(net.parameters(), lr=0.003)
     # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[100,200,300,400], gamma=0.2)
-    scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.99)
+    scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
     # scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.99, patience=1000, threshold=0.01)
 
     torch.save({'state_dict': net.state_dict()}, os.path.join(out_model_path, "epoch_start.pth.tar"))
