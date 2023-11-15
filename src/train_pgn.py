@@ -17,6 +17,7 @@ from chess_board import board as c_board
 from torch.utils.data import IterableDataset
 import numpy as np
 from collections import deque
+import time
 
 
 # Function to extract the game result
@@ -422,6 +423,7 @@ def train_chessnet(train_loader, net_to_train, out_model_path, batch_size=128, l
 
 if __name__=="__main__":
     out_model_path = sys.argv[1]
+    out_model_path = os.join.path(out_model_path, str(time.time()))
 #    pgn_path = sys.argv[2] if len(sys.argv) > 2 else "/data/lichess_db_standard_rated_2023-02.pgn"
     pgn_path = "/data/lichess_db_standard_rated_2023-02.pgn"
     game_cnt = 108201825
