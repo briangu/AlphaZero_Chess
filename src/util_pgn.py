@@ -275,6 +275,16 @@ def encode_move(board, move, tensor_out=True):
 #     final_square = chess.square(j + dx, i + dy)
 #     return final_square, promo_piece
 
+promo_lookup = {
+    'Q': chess.QUEEN,
+    'q': chess.QUEEN,
+    'R': chess.ROOK,
+    'r': chess.ROOK,
+    'B': chess.BISHOP,
+    'b': chess.BISHOP,
+    'N': chess.KNIGHT,
+    'n': chess.KNIGHT,
+}
 
 def decode_move(encoded,board):
     encoded_a = np.zeros([4672]); encoded_a[encoded] = 1; encoded_a = encoded_a.reshape(8,8,73)
@@ -401,7 +411,7 @@ def decode_move(encoded,board):
             else:
                 promoted = "q"
         i_pos.append(initial_pos); f_pos.append(final_pos), prom.append(promoted)
-    return chess.Move(chess.square(*initial_pos), chess.square(*final_pos), promoted=promoted)
+    return chess.Move(chess.square(*initial_pos), chess.square(*final_pos), promotion=promo_lookup.get(promoted))
 
 
 # def process_game(pgn_text):
