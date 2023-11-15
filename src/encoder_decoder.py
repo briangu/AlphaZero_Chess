@@ -4,7 +4,7 @@ import numpy as np
 from chess_board import board as chessboard
 
 def encode_board(board):
-    board_state = board.current_board; 
+    board_state = board.current_board;
     encoded = np.zeros([8,8,22]).astype(int)
     encoder_dict = {"R":0, "N":1, "B":2, "Q":3, "K":4, "P":5, "r":6, "n":7, "b":8, "q":9, "k":10, "p":11}
     for i in range(8):
@@ -27,10 +27,10 @@ def encode_board(board):
             encoded[:,:,15] = 1
     if board.k_move_count == 0 and board.r2_move_count != 0:
             encoded[:,:,16] = 1
-    encoded[:,:,17] = board.move_count
+    encoded[:,:,17] = board.move_count / 200
     encoded[:,:,18] = board.repetitions_w
     encoded[:,:,19] = board.repetitions_b
-    encoded[:,:,20] = board.no_progress_count
+    encoded[:,:,20] = board.no_progress_count / 100
     encoded[:,:,21] = board.en_passant
     return encoded
 
