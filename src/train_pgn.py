@@ -322,7 +322,7 @@ def process_game(game, last_n_moves=8):
         policy = encode_move(last_board, n.move)
         encoded_board = torch.tensor(encode_pychess_board(last_board), dtype=torch.float32)
         board_state_history.append(encoded_board)
-        if last_board.fullmove_number < 20 and torch.rand(1) < 0.5:
+        if last_board.fullmove_number < 10 and torch.rand(1) < 0.5:
             board_stack = torch.stack(list(board_state_history))
             value = torch.tensor(value, dtype=torch.float32)
             yield (board_stack, policy, value)
@@ -368,7 +368,7 @@ def train(net, train_loader, out_model_path, epoch_start=0, epoch_stop=20, cpu=0
     criterion = AlphaLoss()
     optimizer = optim.Adam(net.parameters(), lr=0.003)
     # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[100,200,300,400], gamma=0.2)
-    scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.95)
+    scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.98)
     # scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.99, patience=1000, threshold=0.01)
 
     torch.save({'state_dict': net.state_dict()}, os.path.join(out_model_path, "epoch_start.pth.tar"))
@@ -427,7 +427,7 @@ if __name__=="__main__":
     game_cnt = 108201825
     # model_path = sys.argv[3] if len(sys.argv) > 3 else None
     last_n_moves = 8
-    model_path = None
+    model_path = sys.argv[2] if len(sys.argv) > 2 else None
     dataset = ChessPGNDataset(pgn_path, game_cnt, last_n_moves)
     batch_size = 128  # You can adjust the batch size as needed
     train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=1)
