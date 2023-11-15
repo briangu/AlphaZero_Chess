@@ -207,12 +207,13 @@ def encode_move(board, move, tensor_out=True):
             if dx > 0:
                 idx = 48 + dx
 
-    if tensor_out:
-        encoded_move = torch.zeros((8, 8, 73), dtype=torch.float32)
-        encoded_move[j, i, idx] = 1
-        return encoded_move.flatten()
+    # if tensor_out:
+    encoded_move = torch.zeros((8, 8, 73), dtype=torch.float32)
+    encoded_move[j, i, idx] = 1
+    encoded_move = encoded_move.flatten()
 
-    return idx
+    # return just the index into the flattened array
+    return encoded_move if tensor_out else torch.where(encoded_move == 1)[0].item()
 
 
 # def decode_move(encoded, board):
@@ -289,7 +290,7 @@ promo_lookup = {
 def decode_move(encoded,board):
     encoded_a = np.zeros([4672]); encoded_a[encoded] = 1; encoded_a = encoded_a.reshape(8,8,73)
     a,b,c = np.where(encoded_a == 1); # i,j,k = i[0],j[0],k[0]
-    i_pos, f_pos, prom = [], [], []
+    # i_pos, f_pos, prom = [], [], []
     for pos in zip(a,b,c):
         i,j,k = pos
         initial_pos = (i,j)
