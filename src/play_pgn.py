@@ -28,7 +28,7 @@ def get_model_move(board, model, move_history):
 
     # Generate mask for legal moves
     legal_moves = board.legal_moves
-    legal_move_mask = torch.zeros_like(move_probs, dtype=torch.int8)
+    legal_move_mask = torch.zeros_like(move_probs, dtype=bool)
 
     for move in legal_moves:
         move_index = encode_move(board, move, tensor_out=False)  # Convert move to index
@@ -36,6 +36,8 @@ def get_model_move(board, model, move_history):
 
     # Apply mask
     masked_probs = torch.logical_and(move_probs, legal_move_mask)
+    # turn masked_probs into floats
+    masked_probs = masked_probs.float()
 
     # Normalize probabilities
     normalized_probs = softmax(masked_probs)
