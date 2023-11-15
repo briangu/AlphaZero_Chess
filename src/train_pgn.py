@@ -102,6 +102,20 @@ def copy_board(pychess_board, chess_board):
             chess_board.current_board[i][j] = piece
 
 def encode_pychess_board(board):
+    """
+    https://arxiv.org/pdf/2111.09259.pdf
+
+    The first twelve 8 × 8 channels in z0 are binary, encoding the positions of the playing side
+    and opposing side’s king, queen(s), rooks, bishops, knights and pawns respectively.
+
+    It is followed by 8 x 8 binary channels representing the number of repetitions (for three-fold repetition draws),
+
+    the side to play,
+    and four binary channels for whether the player and opponent can still castle king and queenside.
+
+    Finally, the last two channels are an irreversible move counter (for 50 move rule)
+    and total move counter, both scaled down.
+    """
     encoded = np.zeros([8, 8, 22]).astype(int)
     encoder_dict = {"R": 0, "N": 1, "B": 2, "Q": 3, "K": 4, "P": 5,
                     "r": 6, "n": 7, "b": 8, "q": 9, "k": 10, "p": 11}
@@ -117,11 +131,11 @@ def encode_pychess_board(board):
     encoded[:, :, 14] = 0 if board.has_queenside_castling_rights(chess.WHITE) else 1
     encoded[:, :, 15] = 0 if board.has_kingside_castling_rights(chess.BLACK) else 1
     encoded[:, :, 16] = 0 if board.has_queenside_castling_rights(chess.BLACK) else 1
-    encoded[:, :, 17] = board.fullmove_number
+    encoded[:, :, 17] = board.fullmove_number / 200
     # For repetitions and no progress count, you may need additional logic
     # encoded[:, :, 18] = ...
     # encoded[:, :, 19] = ...
-    encoded[:, :, 20] = board.halfmove_clock
+    encoded[:, :, 20] = board.halfmove_clock / 100
     if board.ep_square:
         ep_square = chess.square_file(board.ep_square), chess.square_rank(board.ep_square)
         encoded[ep_square[1], ep_square[0], 21] = 1
