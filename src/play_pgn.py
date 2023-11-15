@@ -24,6 +24,7 @@ def get_model_move(board, model, move_history):
 
     # model_input = prepare_model_input(board, move_history)
     move_probs, value = model(model_input) # Modify according to your model's prediction method
+    move_probs = move_probs[0]  # Remove batch dimension
 
     # Generate mask for legal moves
     legal_moves = board.legal_moves
