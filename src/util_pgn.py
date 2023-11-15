@@ -410,8 +410,10 @@ def decode_move(encoded,board):
                 promoted = "Q"
             else:
                 promoted = "q"
-        i_pos.append(initial_pos); f_pos.append(final_pos), prom.append(promoted)
-    return chess.Move(chess.square(*initial_pos), chess.square(*final_pos), promotion=promo_lookup.get(promoted))
+        # i_pos.append(initial_pos); f_pos.append(final_pos), prom.append(promoted)
+    from_square = chess.square(initial_pos[1], initial_pos[0])
+    to_square = chess.square(final_pos[1], final_pos[0])
+    return chess.Move(from_square, to_square, promotion=promo_lookup.get(promoted))
 
 
 # def process_game(pgn_text):

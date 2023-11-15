@@ -32,6 +32,7 @@ def get_model_move(board, model, move_history):
 
     for move in legal_moves:
         move_index = encode_move(board, move, tensor_out=False)  # Convert move to index
+        assert decode_move(move_index, board) == move  # Sanity check
         legal_move_mask[move_index] = True
 
     # Apply mask
