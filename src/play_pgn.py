@@ -48,7 +48,7 @@ def get_model_move(board, model, move_history):
 
 def main():
     last_n_moves = 8
-    model_path = "path_to_your_trained_model.pth"
+    model_path = sys.argv[1]
     model = load_model(model_path)
     board = chess.Board()
 
