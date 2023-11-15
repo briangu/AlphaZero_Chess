@@ -23,7 +23,7 @@ def get_model_move(board, model, move_history):
     model_input = torch.tensor(model_input, dtype=torch.float32)
 
     # model_input = prepare_model_input(board, move_history)
-    move_probs = model(model_input) # Modify according to your model's prediction method
+    move_probs, value = model(model_input) # Modify according to your model's prediction method
 
     # Generate mask for legal moves
     legal_moves = board.legal_moves
@@ -43,7 +43,7 @@ def get_model_move(board, model, move_history):
     selected_move_index = torch.argmax(normalized_probs)
     selected_move = decode_move(selected_move_index, board)  # Convert index back to move
 
-    return selected_move
+    return selected_move, value
 
 
 def main():
@@ -62,7 +62,8 @@ def main():
 
         if board.turn:
             # Model's turn
-            move = get_model_move(board, model, move_history)
+            move, value = get_model_move(board, model, move_history)
+            print(value)
         else:
             # User's turn
             move = input("Enter your move: ")
