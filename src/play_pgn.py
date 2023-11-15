@@ -28,7 +28,7 @@ def get_model_move(board, model, move_history):
 
     # Generate mask for legal moves
     legal_moves = board.legal_moves
-    legal_move_mask = torch.zeros_like(move_probs, dtype=bool)
+    legal_move_mask = torch.zeros_like(move_probs, dtype=torch.int8)
 
     for move in legal_moves:
         move_index = encode_move(board, move, tensor_out=False)  # Convert move to index
