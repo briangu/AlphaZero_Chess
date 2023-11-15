@@ -63,7 +63,7 @@ def main():
     while not board.is_game_over():
         print(board)
 
-        if board.turn:
+        if board.turn == chess.BLACK:
             # Model's turn
             move, value = get_model_move(board, model, move_history)
             print(value)
