@@ -231,7 +231,7 @@ def MCTS_self_play(chessnet,num_games,cpu,gpu_id):
 
 if __name__=="__main__":
     import sys
-    current_net_filename=sys.argv[0]
+    current_net_filename=sys.argv[1]
     mp.set_start_method("spawn",force=True)
     net = ChessNet()
     cuda = torch.cuda.is_available()
