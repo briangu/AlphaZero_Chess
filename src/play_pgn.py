@@ -19,8 +19,8 @@ def softmax(x):
 def get_model_move(board, model, move_history):
     current_board_encoded = encode_pychess_board(board)
     move_history.append(current_board_encoded)
-    model_input = torch.stack(list(move_history))
-    model_input = torch.tensor(model_input, dtype=torch.float32)
+    model_input = torch.stack(list(move_history), dtype=torch.float32)
+    # model_input = torch.tensor(model_input, dtype=torch.float32)
 
     # model_input = prepare_model_input(board, move_history)
     move_probs, value = model(model_input) # Modify according to your model's prediction method
