@@ -531,10 +531,10 @@ def process_game(game, last_n_moves=8):
 
         fmn = last_board.fullmove_number
         # if full move number is < 10 then we sample otherwise we always use the last move
-        if (fmn < 10 and torch.rand(1) < 0.5) or fmn >= 10:
-            board_stack = torch.stack(list(board_state_history))
-            value = torch.tensor(value, dtype=torch.float32)
-            yield (board_stack, policy, value)
+        # if (fmn < 10 and torch.rand(1) < 0.5) or fmn >= 10:
+        board_stack = torch.stack(list(board_state_history))
+        value = torch.tensor(value, dtype=torch.float32)
+        yield (board_stack, policy, value)
 
         value = normalize_stockfish_score(score) if isinstance(score, (int,float)) else normalize_mate_score(score)
 
