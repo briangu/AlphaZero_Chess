@@ -526,7 +526,7 @@ def process_game(game, last_n_moves=8):
                 score = mate_score
 
         policy = encode_move(last_board, n.move)
-        encoded_board = torch.tensor(encode_pychess_board(last_board), dtype=torch.float32)
+        encoded_board = encode_pychess_board(last_board)
         board_state_history.append(encoded_board)
         if last_board.fullmove_number < 10 and torch.rand(1) < 0.5:
             board_stack = torch.stack(list(board_state_history))
