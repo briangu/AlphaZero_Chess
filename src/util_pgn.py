@@ -209,7 +209,7 @@ def encode_move(board, move, tensor_out=True):
 
     # if tensor_out:
     encoded_move = torch.zeros((8, 8, 73), dtype=torch.float32)
-    encoded_move[j, i, idx] = 1
+    encoded_move[i, j, idx] = 1
     encoded_move = encoded_move.flatten()
 
     # return just the index into the flattened array
@@ -412,8 +412,8 @@ def decode_move(encoded,board):
             else:
                 promoted = "q"
         # i_pos.append(initial_pos); f_pos.append(final_pos), prom.append(promoted)
-    from_square = chess.square(initial_pos[1], initial_pos[0])
-    to_square = chess.square(final_pos[1], final_pos[0])
+    from_square = chess.square(initial_pos[0], initial_pos[1])
+    to_square = chess.square(final_pos[0], final_pos[1])
     return chess.Move(from_square, to_square, promotion=promo_lookup.get(promoted))
 
 
