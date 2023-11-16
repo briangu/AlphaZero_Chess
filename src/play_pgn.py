@@ -31,7 +31,8 @@ def get_model_move(board, model, move_history):
     for move in legal_moves:
         move_index = encode_move(board, move, tensor_out=False)  # Convert move to index
         dcm = decode_move(move_index, board)
-        print(move, move_index, dcm, chess.square_file(move.from_square), chess.square_rank(move.from_square), chess.square_file(move.to_square), chess.square_rank(move.to_square))        assert decode_move(move_index, board) == move  # Sanity check
+        print(move, move_index, dcm, chess.square_file(move.from_square), chess.square_rank(move.from_square), chess.square_file(move.to_square), chess.square_rank(move.to_square))
+        assert decode_move(move_index, board) == move  # Sanity check
         legal_move_mask[move_index] = True
 
     # Apply mask
