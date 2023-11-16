@@ -406,7 +406,7 @@ def decode_move(encoded,board):
                     promoted = "b"
         piece = board.piece_at(chess.square(i,j))
         symbol = piece.symbol() if piece else " "
-        if symbol in ["P","p"] and final_pos[0] in [0,7] and promoted == None: # auto-queen promotion for pawn
+        if symbol in ["P","p"] and final_pos[1] in [0,7] and promoted == None: # auto-queen promotion for pawn
             if board.turn == chess.WHITE:
                 promoted = "Q"
             else:
